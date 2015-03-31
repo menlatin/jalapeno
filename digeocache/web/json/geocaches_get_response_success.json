@@ -1,0 +1,119 @@
+// Geocache Object Node Inside the Graph Database
+{
+	"id": 87,
+	"title": "Aari's Life Savings",
+	"message": "Don't Lose This!",
+	"location": {
+		"lat": 37.42291810,
+		"lng": -122.08542120
+	},
+	"currency": "DOGE",
+	"amount": 123.45,
+	"is_physical": true,
+	"delay": 3600,
+	"drop_count": 1,
+	"dropped_on": "2015-03-15T00:40:33.163Z"
+}
+
+{
+	"id": 440,
+	"title": "The Pot At The End of the Rainbow",
+	"message": "They're magically delicious!",
+	"location": {
+		"lat": 32.63849833,
+		"lng": -110.10033748
+	},
+	"currency": "FLAPPY",
+	"amount": 5000.00,
+	"is_physical": false,
+	"delay": 0,
+	"drop_count": 1,
+	"dropped_on": "2015-03-15T11:00:17.114Z"
+}
+
+{
+	"id": 5332,
+	"title": "A Hat",
+	"message": "For a wizard...",
+	"location": {
+		"lat": 51.73123833,
+		"lng": -11.51384899
+	},
+	"currency": "BITCOIN",
+	"amount": 3.00,
+	"is_physical": false,
+	"delay": 0,
+	"drop_count": 2,
+	"dropped_on": "2015-03-15T17:22:21.459Z"
+}
+
+// Single Geocache Object from Single ID Request (data still an array)
+{
+	"data": [
+		{
+			"id": 87,
+			"title": "Aari's Life Savings",
+			"message": "Don't Lose This!",
+			"location": {
+				"lat": 37.42291810,
+				"lng": -122.08542120
+			},
+			"currency": "DOGE",
+			"amount": 123.45,
+			"is_physical": true,
+			"delay": 3600,
+			"drop_count": 1,
+			"dropped_on": "2015-03-15T00:40:33.163Z"
+		}
+	]
+}
+
+// Multiple User Objects from Batch Request
+{
+	"data": [
+		{
+			"id": 87,
+			"title": "Aari's Life Savings",
+			"message": "Don't Lose This!",
+			"location": {
+				"lat": 37.42291810,
+				"lng": -122.08542120
+			},
+			"currency": "DOGE",
+			"amount": 123.45,
+			"is_physical": true,
+			"delay": 3600,
+			"drop_count": 1
+		},
+		{
+			"id": 440,
+			"title": "The Pot At The End of the Rainbow",
+			"message": "They're magically delicious!",
+			"location": {
+				"lat": 32.63849833,
+				"lng": -110.10033748
+			},
+			"currency": "FLAPPY",
+			"amount": 5000.00,
+			"is_physical": false,
+			"delay": 0,
+			"drop_count": 1,
+			"dropped_on": "2015-03-15T11:00:17.114Z"
+		},
+		{
+			"id": 5332,
+			"title": "A Hat",
+			"message": "For a wizard...",
+			"location": {
+				"lat": 51.73123833,
+				"lng": -11.51384899
+			},
+			"currency": "BITCOIN",
+			"amount": 3.00,
+			"is_physical": false,
+			"delay": 0,
+			"drop_count": 2,
+			"dropped_on": "2015-03-15T17:22:21.459Z"
+		}
+	]
+}

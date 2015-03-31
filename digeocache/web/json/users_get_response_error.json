@@ -1,0 +1,34 @@
+{
+	"error": {
+		"code": 1001,
+		"message": "The user ID you requested does not exist."
+	}
+}
+
+{
+	"error": {
+		"code": 1002,
+		"message": "You are not authorized to request this user data."
+	}
+}
+
+{
+	"error": {
+		"code": 1003,
+		"message": "Your request for user data timed out."
+	}
+}
+
+{
+	"error": {
+		"code": 1004,
+		"message": "Unable to retrieve user list."
+	}
+}
+
+{
+	"error": {
+		"code": 1005,
+		"message": "Unable to register new user ."
+	}
+}

@@ -1,0 +1,13 @@
+{% extends '_layout.html' %}
+
+{% block title %}Admin Creation Page{% endblock %}
+
+{% block content %}
+  <h1>Add Admin and Other Things...</h1>
+  <p>Create a new admin node</p>
+
+  {% if form %}
+    {% autoescape false %}{{ form }}{% endautoescape %}
+  {% endif %}
+
+{% endblock %}

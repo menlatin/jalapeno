@@ -1,0 +1,18 @@
+{% extends '_layout.html' %}
+
+{% block title %}Error{% endblock %}
+
+{% block content %}
+<h1>Error</h1>
+
+{% if errorMessage %}
+	<p>{{ errorMessage }}</p>
+{% else %}
+	<p>Something went terribly wrong...</p>
+{% endif %}
+
+
+
+<a href='/'>Go Back</a>
+
+{% endblock %}

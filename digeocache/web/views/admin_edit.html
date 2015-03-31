@@ -1,0 +1,17 @@
+{% extends '_layout.html' %}
+
+{% block title %}Admin Edit Page{% endblock %}
+
+{% block content %}
+  <h1>Edit Admin</h1>
+  <p>Update admin information as necessary:</p>
+
+  <select id="admin_select"></select> 
+
+  {% if form %}
+    {% autoescape false %}{{ form }}{% endautoescape %}
+  {% endif %}
+
+{% endblock %}
+
+

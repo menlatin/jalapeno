@@ -1,0 +1,20 @@
+{
+	"error": {
+		"code": 2001,
+		"message": "The user ID you requested friends of does not exist."
+	}
+}
+
+{
+	"error": {
+		"code": 2002,
+		"message": "You are not authorized to request this user friend data."
+	}
+}
+
+{
+	"error": {
+		"code": 2003,
+		"message": "Your request for user friend data timed out."
+	}
+}

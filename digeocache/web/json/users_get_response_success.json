@@ -1,0 +1,103 @@
+// User Object Node Inside the Graph Database
+// (with the exception of authentication requests, hash will be left out of the response objects)
+{
+			"id": 1234,
+			"username": "elliott",
+			"firstname": "Elliott",
+			"lastname:": "Richerson",
+			"email": "elliott.richerson@gmail.com",
+			"birthday": "1987-01-03T00:00:00.000Z",
+			"phone": "112-358-1321",
+			"hash": "$2a$10$od.S4KRFa0QioF3uCwR.L.OhHk1q6CsJBZPUWKlVyGv8OCO.SAe0i",
+			"created_on": "2015-03-14T15:49:23.963Z",
+			"updated_on": "2015-03-14T15:49:23.963Z",
+			"login_on": "2015-03-14T15:49:23.963Z"
+}
+
+{
+			"id": 124,
+			"username": "aari",
+			"firstname": "Aari",
+			"lastname:": "Lotfipour",
+			"email": "aari13@gmail.com",
+			"birthday": null,
+			"phone": "555-555-5555",
+			"hash": "$2a$10$UoRChDAgBhjuhDQB/xmR4u1o57CmFQZasTTQQI7wrslNngB9xtzA2",
+			"created_on": "2015-02-12T18:19:23.963Z",
+			"updated_on": "2015-02-12T18:19:23.963Z",
+			"login_on": "2015-03-14T15:49:23.963Z"
+}
+
+{
+			"id": 72,
+			"username": "charles",
+			"firstname": "Charles",
+			"lastname:": "Rosas",
+			"email": "charles@idontknowyouremail.com",
+			"birthday": null,
+			"phone": null,
+			"hash": "$2a$10$n/diHuGI0mQKsdTRMK4ci.oxlMKhtkKrNXDc/CCN3aabXJLdz/Foy",
+			"created_on": "2015-01-10T15:49:23.963Z",
+			"updated_on": "2015-02-03T08:33:13.963Z",
+			"login_on": "2015-03-14T15:49:23.963Z"
+}
+
+// Single User Object from Single ID Request (data still an array)
+{
+	"data": [
+		{
+			"id": 1234,
+			"username": "elliott",
+			"firstname": "Elliott",
+			"lastname:": "Richerson",
+			"email": "elliott.richerson@gmail.com",
+			"birthday": "1987-01-03T00:00:00.000Z",
+			"phone": "112-358-1321",
+			"created_on": "2015-03-14T15:49:23.963Z",
+			"updated_on": "2015-03-14T15:49:23.963Z",
+			"login_on": "2015-03-14T15:49:23.963Z"
+		}
+	]
+}
+
+// Multiple User Objects from Batch Request
+{
+	"data": [
+		{
+			"id": 1234,
+			"username": "elliott",
+			"firstname": "Elliott",
+			"lastname:": "Richerson",
+			"email": "elliott.richerson@gmail.com",
+			"birthday": "1987-01-03T00:00:00.000Z",
+			"phone": "112-358-1321",
+			"created_on": "2015-03-14T15:49:23.963Z",
+			"updated_on": "2015-03-14T15:49:23.963Z",
+			"login_on": "2015-03-14T15:49:23.963Z"
+		},
+		{
+			"id": 124,
+			"username": "aari",
+			"firstname": "Aari",
+			"lastname:": "Lotfipour",
+			"email": "aari13@gmail.com",
+			"birthday": null,
+			"phone": "555-555-5555",
+			"created_on": "2015-02-12T18:19:23.963Z",
+			"updated_on": "2015-02-12T18:19:23.963Z",
+			"login_on": "2015-03-14T15:49:23.963Z"
+		},
+		{
+			"id": 72,
+			"username": "charles",
+			"firstname": "Charles",
+			"lastname:": "Rosas",
+			"email": "charles@idontknowyouremail.com",
+			"birthday": null,
+			"phone": null,
+			"created_on": "2015-01-10T15:49:23.963Z",
+			"updated_on": "2015-02-03T08:33:13.963Z",
+			"login_on": "2015-03-14T15:49:23.963Z"
+		}
+	]
+}

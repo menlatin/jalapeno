@@ -1,0 +1,12 @@
+{% extends '_layout.html' %}
+
+{% block title %}Admin View{% endblock %}
+
+{% block content %}
+  <h1>Admin View</h1>
+
+  {% if table %}
+    {% autoescape false %}{{ table }}{% endautoescape %}
+  {% endif %}
+
+{% endblock %}

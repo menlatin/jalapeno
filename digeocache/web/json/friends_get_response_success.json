@@ -1,0 +1,81 @@
+// Friends Object from User ID Request
+{
+	"data": [
+		{
+			"user": {
+				"id": 1234,
+				"username": "elliott",
+				"firstname": "Elliott",
+				"lastname:": "Richerson",
+				"email": "elliott.richerson@gmail.com",
+				"created_on": "2015-03-14T15:49:23.963Z",
+				"updated_on": "2015-03-14T15:49:23.963Z",
+				"login_on": "2015-03-14T15:49:23.963Z"
+			},
+			"friends": [
+					{
+						"id": 124,
+						"username": "aari",
+						"firstname": "Aari",
+						"lastname:": "Lotfipour",
+						"email": "aari13@gmail.com",
+						"created_on": "2015-02-12T18:19:23.963Z",
+						"updated_on": "2015-02-12T18:19:23.963Z",
+						"login_on": "2015-03-14T15:49:23.963Z"
+					},
+					{
+						"id": 72,
+						"username": "charles",
+						"firstname": "Charles",
+						"lastname:": "Rosas",
+						"email": "charles@idontknowyouremail.com",
+						"created_on": "2015-01-10T15:49:23.963Z",
+						"updated_on": "2015-02-03T08:33:13.963Z",
+						"login_on": "2015-03-14T15:49:23.963Z"
+					}
+			]
+		}
+	]
+}
+
+// Common (intersection of) Friends Object From 2+ User IDs Request
+{
+	"data": [
+		{
+			"users": [
+				{
+					"id": 1234,
+					"username": "elliott",
+					"firstname": "Elliott",
+					"lastname:": "Richerson",
+					"email": "elliott.richerson@gmail.com",
+					"created_on": "2015-03-14T15:49:23.963Z",
+					"updated_on": "2015-03-14T15:49:23.963Z",
+					"login_on": "2015-03-14T15:49:23.963Z"
+				},
+				{
+					"id": 124,
+					"username": "aari",
+					"firstname": "Aari",
+					"lastname:": "Lotfipour",
+					"email": "aari13@gmail.com",
+					"created_on": "2015-02-12T18:19:23.963Z",
+					"updated_on": "2015-02-12T18:19:23.963Z",
+					"login_on": "2015-03-14T15:49:23.963Z"
+				}
+			],
+			"friends": [
+					{
+						"id": 72,
+						"username": "charles",
+						"firstname": "Charles",
+						"lastname:": "Rosas",
+						"email": "charles@idontknowyouremail.com",
+						"created_on": "2015-01-10T15:49:23.963Z",
+						"updated_on": "2015-02-03T08:33:13.963Z",
+						"login_on": "2015-03-14T15:49:23.963Z"
+					}
+			]
+		}
+	]
+}

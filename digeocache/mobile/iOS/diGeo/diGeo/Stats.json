@@ -1,0 +1,15 @@
+{
+    "status": "success",
+    "stats": {
+        "score": 234429,
+        "overallRank": 4,
+        "friendsRank": 1,
+        "cacheRatio": 257.3,
+        "walletValue": 344.0,
+        "videoCredits": 5,
+        "freezeCredits": 1,
+        "easyDropCredits": 2,
+        "bonusCredits": 3,
+        "transactionCount": 233
+    }
+}

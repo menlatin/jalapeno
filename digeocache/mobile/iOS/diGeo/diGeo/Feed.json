@@ -1,0 +1,44 @@
+{
+    "status": "success",
+    "feed": [
+             {
+             "dropID": 123456789,
+             "collected": true,
+             "user": "Elliott",
+             "userID": 987654321,
+             "coinAmount": 792.0,
+             "coinCurrency": "FLAP",
+             "location": "The Alamo",
+             "coordinate": "29.4258,98.4861",
+             "timestamp": "2015-01-03T18:25:43.511Z",
+             "assetCount": 1,
+             "isFriend": false
+             },
+             {
+             "dropID": 23429299,
+             "collected": false,
+             "user": "Aari",
+             "userID": 5558383888,
+             "coinAmount": 1000000.07,
+             "coinCurrency": "REDD",
+             "location": "Mount Everest",
+             "coordinate": "27.9881,86.9253",
+             "timestamp": "2014-12-25T11:02:10.444Z",
+             "assetCount": 2,
+             "isFriend": true
+             },
+             {
+             "dropID": 8887737,
+             "collected": false,
+             "user": "Bigfoot",
+             "userID": 7720009,
+             "coinAmount": 42.3,
+             "coinCurrency": "DOGE",
+             "location": "Space Needle",
+             "coordinate": "47.6204,122.3491",
+             "timestamp": "2015-02-14T09:51:01.713Z",
+             "assetCount": 1,
+             "isFriend": false
+             }
+    ]
+}

@@ -61,14 +61,14 @@ function hola() {
 | Endpoint | Description |
 | ---- | --------------- |
 | [POST /api/admins/](#post-admins) | Request new admin
-| [GET /api/admins/](#get-admins) | Requeset admin list |
+| [GET /api/admins/](#get-admins) | Request admin list |
 | [PUT /api/admins/](#put-admins) | Request bulk admin update  |
 | [DELETE /api/admins/](#delete-admins) | Request bulk admin delete |
 | [GET /api/admins/:id](#get-admins-id) | Request admin with id |
 | [PUT /api/admins/:id](#put-admins-id) | Request admin edit with id |
 | [DELETE /api/admins/:id](#delete-admins-id) | Request admin delete with id |
 
-## `POST /api/admins/`
+## POST /api/admins/
 
 #### Users
 

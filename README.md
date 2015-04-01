@@ -68,15 +68,53 @@ function hola() {
 | [PUT /api/admins/:id](#put-admins-id) | Request admin edit with id |
 | [DELETE /api/admins/:id](#delete-admins-id) | Request admin delete with id |
 
-## POST /api/admins/
-
 #### Users
+
+| Endpoint | Description |
+| ---- | --------------- |
+| [POST /api/users/](#post-users) | Request new user
+| [GET /api/users/](#get-users) | Request user list |
+| [PUT /api/users/](#put-users) | Request bulk user update  |
+| [DELETE /api/users/](#delete-users) | Request bulk user delete |
+| [GET /api/users/:id](#get-users-id) | Request user with id |
+| [PUT /api/users/:id](#put-users-id) | Request user edit with id |
+| [DELETE /api/users/:id](#delete-users-id) | Request user delete with id |
 
 #### Geocaches
 
+| Endpoint | Description |
+| ---- | --------------- |
+| [POST /api/geocaches/](#post-geocaches) | Request new geocache
+| [GET /api/geocaches/](#get-geocaches) | Request geocache list |
+| [PUT /api/geocaches/](#put-geocaches) | Request bulk geocache update  |
+| [DELETE /api/geocaches/](#delete-geocaches) | Request bulk geocache delete |
+| [GET /api/geocaches/:id](#get-geocaches-id) | Request geocache with id |
+| [PUT /api/geocaches/:id](#put-geocaches-id) | Request geocache edit with id |
+| [DELETE /api/geocaches/:id](#delete-geocaches-id) | Request geocache delete with id |
+
 #### Products
 
+| Endpoint | Description |
+| ---- | --------------- |
+| [POST /api/products/](#post-products) | Request new product
+| [GET /api/products/](#get-products) | Request product list |
+| [PUT /api/products/](#put-products) | Request bulk product update  |
+| [DELETE /api/products/](#delete-products) | Request bulk product delete |
+| [GET /api/products/:id](#get-products-id) | Request product with id |
+| [PUT /api/products/:id](#put-products-id) | Request product edit with id |
+| [DELETE /api/products/:id](#delete-products-id) | Request product delete with id |
+
 #### Listings
+
+| Endpoint | Description |
+| ---- | --------------- |
+| [POST /api/listings/](#post-listings) | Request new listing
+| [GET /api/listings/](#get-listings) | Request listing list |
+| [PUT /api/listings/](#put-listings) | Request bulk listing update  |
+| [DELETE /api/listings/](#delete-listings) | Request bulk listing delete |
+| [GET /api/listings/:id](#get-listings-id) | Request listing with id |
+| [PUT /api/listings/:id](#put-listings-id) | Request listing edit with id |
+| [DELETE /api/listings/:id](#delete-listings-id) | Request listing delete with id |
 
 ### Derived Relationship Queries
 

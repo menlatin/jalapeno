@@ -5,6 +5,34 @@ Super Secret Jalapeno Project
 
 Cryptocurrency-based game
 
+## Workspace Setup Instructions
+
+__nodemon__ is a monitor script for use during development of node.js apps. The "-g" global optio nis necessary to install nodemon to the bin path.
+
+```
+$ npm install -g nodemon
+```
+
+__nodemon__ is used when starting up the application, using the --harmony flag, because diGeoCache utilizes the Koa framework which uses javascript generator functions -- features of Javascript ES6
+
+__n__ is a node version manager which allows you to easily switch between node versions.  Because diGeoCache utilizes the Koa framework which utilizes javascript generator functions, the latest node version (at least 0.12.0) will be needed.
+
+```
+$ npm install -g n
+```
+
+Installing a version is as simple as typing "n" followed by the version.
+
+```
+$ n 0.12.0
+```
+Changing the active version is as simple as typing "n" and using the arrow keys to select one of the installed versions of node.
+
+```
+$ n
+```
+
+The package.json file contains a list of the fundamental NPM dependencies.  Among other options, this file describes the entry-point javascript file into the app "server.js" and the script used to start it.
 
 ## diGeoCache REST API
 
@@ -19,10 +47,10 @@ Note: "<diGeoCache>" will be used as a temporary subsitute for a host name.
 
 
 ```js
-	// Example Javascript
-	function hola() {
-		// This is a test for README.md formatting
-	}
+// Example Javascript
+function hola() {
+	// This is a test for README.md formatting
+}
 ```
 
 

@@ -7,13 +7,15 @@ Cryptocurrency-based game
 
 ## Workspace Setup Instructions
 
-__nodemon__ is a monitor script for use during development of node.js apps. The "-g" global optio nis necessary to install nodemon to the bin path.
+Install node (min version 0.12.0) from https://nodejs.org/
+
+__nodemon__ is a monitor script for use during development of node.js apps. The "-g" global option is necessary to install nodemon to the bin path.
 
 ```
 $ npm install -g nodemon
 ```
 
-__nodemon__ is used when starting up the application, using the --harmony flag, because diGeoCache utilizes the Koa framework which uses javascript generator functions -- features of Javascript ES6
+__nodemon__ is used when starting up the application, using the --harmony flag, because diGeoCache utilizes the Koa framework (based off Node.js and Express.js) which uses javascript generator functions -- features of Javascript ES6.
 
 __n__ is a node version manager which allows you to easily switch between node versions.  Because diGeoCache utilizes the Koa framework which utilizes javascript generator functions, the latest node version (at least 0.12.0) will be needed.
 
@@ -43,8 +45,7 @@ For relationship-based and compound queries, the response objects may deviate an
 
 For example, "Friend" is not a node label in the Neo4j database, but is indicated by the relationships between nodes such as ":FRIENDS_WITH".  Using these relationships, a query can produce the list of mutual friends between two or more users.  The full set of properties of the users might be known to initiate the request for mutual friends, but having the __input__ packaged with the derived output can provide benefit to the consumers of the API by reducing the complexity of the view logic and to the producer by minimizing the load on the server through unnecessary follow-up requests.
 
-Note: "<diGeoCache>" will be used as a temporary subsitute for a host name.
-
+Note: "diGeoCache" will be used as a temporary subsitute for a host name.
 
 ```js
 // Example Javascript
@@ -53,10 +54,21 @@ function hola() {
 }
 ```
 
-
 ### Pure REST Queries
 
 #### Admins
+
+| Endpoint | Description |
+| ---- | --------------- |
+| [POST /api/admins/](#post-admins) | Request new admin
+| [GET /api/admins/](#get-admins) | Requeset admin list |
+| [PUT /api/admins/](#put-admins) | Request bulk admin update  |
+| [DELETE /api/admins/](#delete-admins) | Request bulk admin delete |
+| [GET /api/admins/:id](#get-admins-id) | Request admin with id |
+| [PUT /api/admins/:id](#put-admins-id) | Request admin edit with id |
+| [DELETE /api/admins/:id](#delete-admins-id) | Request admin delete with id |
+
+## `POST /api/admins/`
 
 #### Users
 

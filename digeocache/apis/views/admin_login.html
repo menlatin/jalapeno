@@ -1,0 +1,16 @@
+{% extends '_layout.html' %}
+
+{% block title %}Login Form{% endblock %}
+
+{% block content %}
+  <h1>Admin Login</h1>
+
+  {% if form %}
+    {% autoescape false %}{{ form }}{% endautoescape %}
+  {% endif %}
+
+  <div id="result"></div>
+  <script src="/public/js/admin_login.js"></script>
+
+{% endblock %}
+

@@ -28,10 +28,10 @@ module.exports = function Database(configuration) {
 			this.dbx = database;
 		},
 		cypher: function(input) {
-			console.log("----------------------");
-			console.log("EXECUTING CYPHER QUERY");
-			console.log(input);
-			console.log("----------------------");
+			// console.log("----------------------");
+			// console.log("EXECUTING CYPHER QUERY");
+			// console.log(input);
+			// console.log("----------------------");
 			return function(callback) {
 				this.cypher(input, callback);
 			}.bind(this.dbx);
@@ -61,6 +61,19 @@ module.exports = function Database(configuration) {
 				alias+".updated_on AS updated_on, "+
 				alias+".login_on AS login_on";
 		},
+		admin_login_return: function(alias) {
+			return " id("+alias+") AS id, "+ 
+				alias+".username AS username, "+ 
+				alias+".firstname AS firstname, "+
+				alias+".lastname AS lastname, "+
+				alias+".email AS email, "+
+				alias+".birthday AS birthday, "+
+				alias+".phone AS phone, "+
+				alias+".created_on AS created_on, "+
+				alias+".updated_on AS updated_on, "+
+				alias+".login_on AS login_on, "+
+				alias+".hash AS hash";
+		},
 		admin_create: function(admin) {
 			var query = "CREATE (a:Admin {admin}) " +
 						" RETURN " + this.admin_return("a");
@@ -68,7 +81,7 @@ module.exports = function Database(configuration) {
 			return this.cypher({query: query, params: params});
 		},
 		admin_update: function(admin, id) {
-			var query = "MATCH (a:Admin) WHERE id(a) SET a += { admin }";
+			var query = "MATCH (a:Admin) WHERE id(a) = " + id + " SET a += { admin }";
 			var params = { admin: admin };
 			return this.cypher({query: query, params: params});
 		},
@@ -82,14 +95,34 @@ module.exports = function Database(configuration) {
 						"\" RETURN " + this.admin_return("a");
 			return this.cypher(query);
 		},
+		admin_by_username_for_login: function(username) {
+			var query = "MATCH (a:Admin) WHERE a.username = \"" + username + 
+						"\" RETURN " + this.admin_login_return("a");
+			return this.cypher(query);
+		},
 		admin_by_email: function(email) {
 			var query = "MATCH (a:Admin) WHERE a.email = \"" + email + 
 						"\" RETURN " + this.admin_return("a");
 			return this.cypher(query);
 		},
+		admin_by_email_for_login: function(email) {
+			var query = "MATCH (a:Admin) WHERE a.email = \"" + email + 
+						"\" RETURN " + this.admin_login_return("a");
+			return this.cypher(query);
+		},
 		admins_all: function() {
 			var query = "MATCH (a:Admin)" +
 						" RETURN " + this.admin_return("a");
+			return this.cypher(query);
+		},
+		admin_delete_by_username: function(username) {
+			var query = "MATCH (a:Admin) WHERE a.username = \"" + username + 
+						"\" DELETE a";
+			return this.cypher(query);
+		},
+		admin_delete_by_email: function(email) {
+			var query = "MATCH (a:Admin) WHERE a.email = \"" + email + 
+						"\" DELETE a";
 			return this.cypher(query);
 		},
 		admins_purge: function() {
@@ -108,6 +141,19 @@ module.exports = function Database(configuration) {
 				alias+".updated_on AS updated_on, "+
 				alias+".login_on AS login_on";
 		},
+		user_login_return: function(alias) {
+			return " id("+alias+") AS id, "+ 
+				alias+".username AS username, "+ 
+				alias+".firstname AS firstname, "+
+				alias+".lastname AS lastname, "+
+				alias+".email AS email, "+
+				alias+".birthday AS birthday, "+
+				alias+".phone AS phone, "+
+				alias+".created_on AS created_on, "+
+				alias+".updated_on AS updated_on, "+
+				alias+".login_on AS login_on, "+
+				alias+".hash AS hash";
+		},
 		user_create: function(user) {
 			var query = "CREATE (u:User {user}) " +
 						" RETURN " + this.user_return("u");
@@ -122,6 +168,26 @@ module.exports = function Database(configuration) {
 		user_by_id: function(id) {
 			var query = "MATCH (u:User) WHERE id(u) = " + id + 
 						" RETURN " + this.user_return("u");
+			return this.cypher(query);
+		},
+		user_by_username: function(username) {
+			var query = "MATCH (u:User) WHERE u.username = \"" + username + 
+						"\" RETURN " + this.user_return("u");
+			return this.cypher(query);
+		},
+		user_by_username_for_login: function(username) {
+			var query = "MATCH (u:User) WHERE u.username = \"" + username + 
+						"\" RETURN " + this.user_login_return("u");
+			return this.cypher(query);
+		},
+		user_by_email: function(email) {
+			var query = "MATCH (u:User) WHERE u.email = \"" + email + 
+						"\" RETURN " + this.user_return("u");
+			return this.cypher(query);
+		},
+		user_by_email_for_login: function(email) {
+			var query = "MATCH (u:User) WHERE u.email = \"" + email + 
+						"\" RETURN " + this.user_login_return("u");
 			return this.cypher(query);
 		},
 		users_all: function() {

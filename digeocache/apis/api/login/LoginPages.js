@@ -20,47 +20,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-module.exports = function AdminPages(db, forms, views, admin_schema, error_pages) {
-	var admin_pages = {
-		create: function *(next) {
-			this.req.formName = "admin_create";
-			this.req.formAction = "/api/admins";
-			this.req.formSchema = admin_schema;
-			this.req.formButtonValue = "Create";
+module.exports = function LoginPages(db, forms, views, login_schema, error_pages) {
+	var login_pages = {
+		admin: function *(next) {
+			this.req.formName = "admin_login";
+			this.req.formAction = "";	// relies on AJAX
+			this.req.formSchema = login_schema;
+			console.log(this.req.formSchema);
+			this.req.formButtonValue = "Login";
 			yield forms.renderForm;
 		},
-		//TODO: edit logic / page handling
-		edit: function *(next) {
-			this.req.formName = "admin_edit";
-			this.req.formAction = "";
-			this.req.formSchema = admin_schema;
-			this.req.formButtonValue = "Edit";
-
-
-			var results = yield db.util.admins_all();
-			if (!results) {
-				this.req.errorMessage = "Issues retrieving admin data for editing.";
-				return yield error_pages.generic; 
-			}
-			else {
-				// console.log("results = ", results);
-				this.req.data = JSON.stringify(results);
-				yield forms.renderForm;
-			}
-		},
-		//TODO: destroy logic / page handling
-		destroy: function *(next) {
-			this.req.formName = "admin_destroy";
-			this.req.formAction = "";
-			this.req.formSchema = admin_schema;
-			this.req.formButtonValue = "Delete";
+		user: function *(next) {
+			this.req.formName = "user_login";
+			this.req.formAction = "/login/users";
+			this.req.formSchema = login_schema;
+			console.log(this.req.formSchema);
+			this.req.formButtonValue = "Login";
 			yield forms.renderForm;
-		},
-		view: function *(next) {
-			this.req.viewName = "admin_view";
-			this.req.viewSchema = admin_schema;
-			yield views.renderView;
 		}
 	};
-	return admin_pages;
+	return login_pages;
 };

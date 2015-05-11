@@ -1,5 +1,3 @@
-alert("got here");
-
 // // this is the id of the form
 // $("#formUserPUT").submit(function() {
 

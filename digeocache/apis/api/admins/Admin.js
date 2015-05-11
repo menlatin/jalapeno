@@ -117,9 +117,15 @@ module.exports = function Admin(db,bcrypt,parse,admin_schema,validate,errors,adm
 					return yield admin.invalidPost;
 				}
 				// Malformed Cypher Query
-				else if (err.neo4j.code == "Neo.ClientError.Statement.InvalidSyntax") {
-					this.req.formErrors = [errors.DB_ERROR("malformed query")];
-					return yield admin.invalidPost;
+				else if (err.neo4j) {
+					if(err.neo4j.code && err.neo4j.code == "Neo.ClientError.Statement.InvalidSyntax") {
+						this.req.formErrors = [errors.DB_ERROR("malformed query")];
+						return yield admin.invalidPost;
+					}
+					else {
+						this.req.formErrors = [errors.DB_ERROR("neo4j error")];
+						return yield admin.invalidPost;
+					}
 				}
 				else {
 					// Unknown Error

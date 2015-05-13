@@ -73,7 +73,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate) {
         }, {
             attribute: "updated_on",
             type: "date",
-            required: true,
+            required: false,
             auto: true
         }, {
             attribute: "login_on",
@@ -92,7 +92,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate) {
             this.body = json;
         },
         post: function * (next) {
-            console.log("admin.post");
+            // console.log("admin.post");
             try {
                 var admin_pre = yield parse(this);
                 var admin_test = validate.schema(admin.schema, admin_pre);
@@ -185,7 +185,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate) {
             this.body = json;
         },
         get: function * (next) {
-            console.log("admin.get");
+            // console.log("admin.get");
 
             function getQueryVariable(queryStr, queryVar) {
                 var queryVars = queryStr.split('&');
@@ -288,7 +288,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate) {
             }
         },
         put: function * (next) {
-            console.log("admin.put");
+            // console.log("admin.put");
             try {
                 var admin_pre = yield parse(this);
                 var admin_test = validate.schema(admin.schema, admin_pre);
@@ -330,7 +330,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate) {
             }
         },
         del: function * (next) {
-            console.log("admin.del");
+            // console.log("admin.del");
             try {
                 var id = this.params.id
                 var success = true;

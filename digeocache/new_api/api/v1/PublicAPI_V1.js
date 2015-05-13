@@ -1,4 +1,4 @@
-module.exports = function PublicAPI_V1(admin) {
+module.exports = function PublicAPI_V1(admin, adminLogin) {
 
     var Router = require('koa-router');
 
@@ -8,9 +8,7 @@ module.exports = function PublicAPI_V1(admin) {
     PublicAPI_V1.post('/admin', admin.post);
 
     // admin login
-    PublicAPI_V1.post('/auth/login', function * next() {
-        this.body = "authController.login";
-    });
+    PublicAPI_V1.post('/auth/admin', adminLogin.post);
 
     return PublicAPI_V1;
 };

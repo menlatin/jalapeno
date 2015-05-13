@@ -41,6 +41,7 @@ var Errors = require('./Errors.js');
 var Validate = require('./Validate.js');
 var Router = require('./Router.js');
 
+var AdminLogin = require('./AdminLogin.js');
 var Admin = require('./Admin.js');
 
 // Public Key Used for JWT Verification
@@ -61,10 +62,11 @@ var db = new Database('http://localhost:7474');
 var errors = new Errors();
 var validate = new Validate(errors);
 
+var adminLogin = new AdminLogin(db, bcrypt, fs, jwt, parse, errors, validate);
 var admin = new Admin(db, bcrypt, parse, errors, validate);
 
 var PublicAPI_V1 = require('./api/v1/PublicAPI_V1.js');
-var pubV1 = new PublicAPI_V1(admin);
+var pubV1 = new PublicAPI_V1(admin, adminLogin);
 var ProtectedAPI_V1 = require('./api/v1/ProtectedAPI_V1.js');
 var apiV1 = new ProtectedAPI_V1(admin);
 

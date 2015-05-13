@@ -71,7 +71,13 @@ module.exports = function Errors() {
 			    	return {
 			    		code: 3002,
 			    		attribute: attribute,
-			    		message: "the password you enterd is incorrect"
+			    		message: "the password you entered is incorrect"
+			    	};
+			    },
+			    LOGIN_FAILURE: function() {
+			    	return {
+			    		code: 3003,
+			    		message: "failed to login, please try again"
 			    	};
 			    }
 			},

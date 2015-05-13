@@ -1,45 +1,46 @@
 {
-    "name": "digeocache",
-    "version": "0.0.0",
-    "description": "Cryptocurrency Geocaches Game and Marketplace",
-    "main": "server.js",
-    "scripts": {
-        "preinstall": "echo Hold on to your butts...",
-        "postinstall": "echo Mr. Hammond, the phones are working.",
-        "start": "node --harmony `which gulp`",
-        "test": "node --harmony `which gulp` test-once"
-    },
-    "repository": {
-        "type": "git",
-        "url": ""
-    },
-    "author": "Elliott Richerson",
-    "license": "MIT",
-    "dependencies": {
-        "co-bcrypt": "1.0.0",
-        "co-body": "1.2.0",
-        "koa": "0.20.0",
-        "koa-compose": "2.3.0",
-        "koa-jwt": "1.0.0",
-        "koa-logger": "1.2.2",
-        "koa-mount": "1.3.0",
-        "koa-router": "4.3.2",
-        "koa-static-cache": "3.1.1",
-        "lodash": "3.8.0",
-        "neo4j": "2.0.0-RC1"
-    },
-    "devDependencies": {
-        "co": "4.5.4",
-        "co-supertest": "0.0.8",
-        "gulp": "3.8.11",
-        "gulp-exit": "0.0.2",
-        "gulp-mocha-co": "0.4.1-co.3",
-        "gulp-nodemon": "2.0.3",
-        "gulp-watch": "4.2.4",
-        "chai": "2.3.0",
-        "supertest": "0.15.0"
-    },
-    "engines": {
-        "node": "v0.12.2"
-    }
+  "name": "digeocache",
+  "version": "0.0.0",
+  "description": "Cryptocurrency Geocaches Game and Marketplace",
+  "main": "server.js",
+  "scripts": {
+    "preinstall": "echo Hold on to your butts...",
+    "postinstall": "echo Mr. Hammond, the phones are working.",
+    "start": "node --harmony `which gulp`",
+    "test": "node --harmony `which gulp` test-once"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "Elliott Richerson",
+  "license": "MIT",
+  "dependencies": {
+    "co-bcrypt": "1.0.0",
+    "co-body": "1.2.0",
+    "koa": "0.20.0",
+    "koa-compose": "2.3.0",
+    "koa-jwt": "1.0.0",
+    "koa-logger": "1.2.2",
+    "koa-mount": "1.3.0",
+    "koa-router": "4.3.2",
+    "koa-static-cache": "3.1.1",
+    "lodash": "3.8.0",
+    "neo4j": "2.0.0-RC1"
+  },
+  "devDependencies": {
+    "co": "4.5.4",
+    "co-supertest": "0.0.8",
+    "gulp": "3.8.11",
+    "gulp-exit": "0.0.2",
+    "gulp-mocha-co": "0.4.1-co.3",
+    "gulp-nodemon": "2.0.3",
+    "gulp-watch": "4.2.4",
+    "chai": "2.3.0",
+    "supertest": "0.15.0",
+    "lodash": "3.8.0"
+  },
+  "engines": {
+    "node": "v0.12.2"
+  }
 }

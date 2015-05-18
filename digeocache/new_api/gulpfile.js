@@ -23,7 +23,7 @@ gulp.task('nodemon', function() {
 
 gulp.task('watch', function() {
     gulp.watch(
-        ['*.js', 'api/*.js', 'test/*.js'], // files to watch
+        ['*.js', 'api/**/*.js'], // files to watch
         {
             read: true
         }, ['mocha'] // tasks to run when above files change
@@ -38,7 +38,7 @@ gulp.task('mocha', function() {
 
             process.env.NODE_ENV = 'test';
             process.env.PORT = 8001;
-            gulp.src(['test/test_*.js'])
+            gulp.src(['api/v1/test/test_*.js'])
                 .pipe(mocha({
                     reporter: 'spec'
                 }))

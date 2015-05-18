@@ -5,11 +5,11 @@ module.exports = function DB(config) {
     var Q = require('q');
     var _ = require('lodash');
 
-    var Errors = require('./Errors.js');
-    var errors = new Errors();
+    var errors = require('./Errors.js')();
 
-    var adminDB = require('./AdminDB.js')();
-    // var userDB = require('./UserDB.js')();
+    var adminDB = require('./admin/AdminDB.js')();
+    var userDB = require('./user/UserDB.js')();
+    var geocacheDB = require('./geocache/GeocacheDB.js')();
 
     var db = {
         cypher: function(input) {
@@ -114,6 +114,8 @@ module.exports = function DB(config) {
 
     // Merge Database Utility Functions for Models
     _.merge(db, adminDB);
+    _.merge(db, userDB);
+    _.merge(db, geocacheDB);
 
     return db;
 }

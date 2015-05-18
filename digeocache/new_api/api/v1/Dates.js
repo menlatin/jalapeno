@@ -66,14 +66,13 @@ module.exports = function Dates(errors) {
     var dates = {
         test: {
             admin: {
-                // Admin Validation Regular Expressions
                 BIRTHDAY: birthdayRangeTest()
             },
             user: {
                 BIRTHDAY: birthdayRangeTest()
             },
             geocache: {
-
+                
             }
         }
     };

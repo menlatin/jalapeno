@@ -1,3 +1,66 @@
+// [
+		{
+		    attribute: "title",
+		    type: String,
+		    required: true,
+		    auto: false,
+		    test: validate.regex.test.geocache.TITLE
+		}, {
+		    attribute: "message",
+		    type: String,
+		    required: true,
+		    auto: false,
+		    test: validate.regex.test.geocache.MESSAGE
+		}, {
+		    attribute: "lat",
+		    type: Number,
+		    required: true,
+		    auto: false,
+		    test: validate.regex.test.geocache.LATITUDE
+		}, {
+		    attribute: "lng",
+		    type: Number,
+		    auto: false,
+		    required: true,
+		    auto: false,
+		    test: validate.regex.test.geocache.LONGITUDE
+		}, {
+		    attribute: "currency",
+		    type: String,
+		    required: true,
+		    auto: false,
+		    test: validate.regex.test.geocache.CURRENCY
+		}, {
+		    attribute: "amount",
+		    type: Number,
+		    required: true,
+		    auto: false,
+		    test: validate.regex.test.geocache.AMOUNT
+		}, {
+		    attribute: "is_physical",
+		    type: Boolean,
+		    required: true
+		    auto: false,
+		    test: validate.regex.test.geocache.IS_PHYSICAL
+		}, {
+		    attribute: "delay",
+		    type: Number,
+		    required: true,
+		    auto: false,
+		    test: validate.regex.test.geocache.DELAY
+		}, {
+		    attribute: "drop_count",
+		    type: Number,
+		    required: true,
+		    auto: true
+		}, {
+		    attribute: "dropped_on",
+		    type: Date,
+		    required: true,
+		    auto: true
+		}
+// 	]
+
 // The MIT License (MIT)
 
 // Copyright (c) 2015 Elliott Richerson, Carlos Aari Lotfipour
@@ -20,9 +83,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utility) {
+module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, utility) {
 
-    var admin = {
+    var geocache = {
         schema: [{
             attribute: "username",
             type: "text",
@@ -118,18 +181,18 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                     var checkUsername = yield db.admin_username_taken(admin_test.data.username);
                     if (checkUsername.success) {
                         if (checkUsername.taken) {
-                            return yield admin.invalidPost(admin_pre, [errors.user.USERNAME_TAKEN("username")]);
+                            return yield geocache.invalidPost(admin_pre, [errors.user.USERNAME_TAKEN("username")]);
                         }
                     } else {
-                        return yield admin.invalidPost(admin_pre, checkUsername.errors);
+                        return yield geocache.invalidPost(admin_pre, checkUsername.errors);
                     }
                     var checkEmail = yield db.admin_email_taken(admin_test.data.email);
                     if (checkEmail.success) {
                         if (checkEmail.taken) {
-                            return yield admin.invalidPost(admin_pre, [errors.user.EMAIL_TAKEN("email")]);
+                            return yield geocache.invalidPost(admin_pre, [errors.user.EMAIL_TAKEN("email")]);
                         }
                     } else {
-                        return yield admin.invalidPost(admin_pre, checkEmail.errors);
+                        return yield geocache.invalidPost(admin_pre, checkEmail.errors);
                     }
 
                     // Generate salt/hash using bcrypt
@@ -149,17 +212,17 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                     // Request DB Create Node and Respond Accordingly
                     var create = yield db.admin_create(admin_test.data);
                     if (create.success) {
-                        return yield admin.success(create.data);
+                        return yield geocache.success(create.data);
                     } else {
-                        return yield admin.invalidPost(admin_pre, create.errors);
+                        return yield geocache.invalidPost(admin_pre, create.errors);
                     }
 
                 } else {
                     // Request was not valid,
-                    return yield admin.invalidPost(admin_pre, admin_test.errors);
+                    return yield geocache.invalidPost(admin_pre, admin_test.errors);
                 }
             } catch (e) {
-                return yield admin.catchErrors(e, admin_pre);
+                return yield geocache.catchErrors(e, admin_pre);
             }
         },
         get: function * (next) {
@@ -172,24 +235,24 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                     // Return all admins      
                     var allAdmins = yield db.admins_all();
                     if (allAdmins.success) {
-                        return yield admin.success(allAdmins.data);
+                        return yield geocache.success(allAdmins.data);
                     } else {
-                        return yield admin.invalid(allAdmins.errors);
+                        return yield geocache.invalid(allAdmins.errors);
                     }
                 }
                 // Parameter exists in URL
                 else {
                     // Try to identify existing admin
-                    var findAdmin = yield admin.identifyFromURL(this.params.id);
+                    var findAdmin = yield geocache.identifyFromURL(this.params.id);
                     if (findAdmin.success) {
-                        return yield admin.success(findAdmin.data);
+                        return yield geocache.success(findAdmin.data);
                     } else {
-                        return yield admin.invalid(findAdmin.errors);
+                        return yield geocache.invalid(findAdmin.errors);
                     }
                 }
             } catch (e) {
                 // Unknown Error
-                return yield admin.catchErrors(e, null);
+                return yield geocache.catchErrors(e, null);
             }
         },
         put: function * (next) {
@@ -208,19 +271,19 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                     //     // Loop through validated data and perform updates
                     // }
                     // else {
-                    //     return yield admin.invalidPost(admin_pre, batch_test.errors);
+                    //     return yield geocache.invalidPost(admin_pre, batch_test.errors);
                     // }
-                    return yield admin.invalidPost(admin_pre, [errors.UNSUPPORTED()]);
+                    return yield geocache.invalidPost(admin_pre, [errors.UNSUPPORTED()]);
                 }
                 // Parameter exists in URL
                 else {
                     // Try to identify existing admin
                     var existingAdmin = undefined;
-                    var findAdmin = yield admin.identifyFromURL(this.params.id);
+                    var findAdmin = yield geocache.identifyFromURL(this.params.id);
                     if (findAdmin.success) {
                         existingAdmin = findAdmin.data;
                     } else {
-                        return yield admin.invalidPost(admin_pre, findAdmin.errors);
+                        return yield geocache.invalidPost(admin_pre, findAdmin.errors);
                     }
                     // If we got this far, we must have found a match.
                     // Now validate what we're trying to update
@@ -242,16 +305,16 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                         // Request DB update
                         var adminUpdate = yield db.admin_update(admin_test.data, existingAdmin.id);
                         if (adminUpdate.success) {
-                            return yield admin.success(adminUpdate.data);
+                            return yield geocache.success(adminUpdate.data);
                         } else {
-                            return yield admin.invalidPost(admin_pre, adminUpdate.errors);
+                            return yield geocache.invalidPost(admin_pre, adminUpdate.errors);
                         }
                     } else {
-                        return yield admin.invalidPost(admin_pre, admin_test.errors);
+                        return yield geocache.invalidPost(admin_pre, admin_test.errors);
                     }
                 }
             } catch (e) {
-                return yield admin.catchErrors(e, admin_pre);
+                return yield geocache.catchErrors(e, admin_pre);
             }
         },
         del: function * (next) {
@@ -270,30 +333,30 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                     //     // Loop through validated data and perform deletes
                     // }
                     // else {
-                    //     return yield admin.invalidPost(admin_pre, batch_test.errors);
+                    //     return yield geocache.invalidPost(admin_pre, batch_test.errors);
                     // }
-                    return yield admin.invalidPost(admin_pre, [errors.UNSUPPORTED()]);
+                    return yield geocache.invalidPost(admin_pre, [errors.UNSUPPORTED()]);
                 }
                 // Parameter exists in URL
                 else {
                     // Try to identify existing admin
                     var existingAdmin = undefined;
-                    var findAdmin = yield admin.identifyFromURL(this.params.id);
+                    var findAdmin = yield geocache.identifyFromURL(this.params.id);
                     if (findAdmin.success) {
                         existingAdmin = findAdmin.data;
                     } else {
-                        return yield admin.invalidPost(admin_pre, findAdmin.errors);
+                        return yield geocache.invalidPost(admin_pre, findAdmin.errors);
                     }
                     // If we got this far, we must have found a match to delete.
                     var adminDelete = yield db.admin_delete(admin_test.data, existingAdmin.id);
                     if (adminDelete.success) {
-                        return yield admin.success(adminDelete.data);
+                        return yield geocache.success(adminDelete.data);
                     } else {
-                        return yield admin.invalidPost(admin_pre, adminDelete.errors);
+                        return yield geocache.invalidPost(admin_pre, adminDelete.errors);
                     }
                 }
             } catch (e) {
-                return yield admin.catchErrors(e, admin_pre);
+                return yield geocache.catchErrors(e, admin_pre);
             }
         },
         identifyFromURL: function(params_id) {
@@ -348,25 +411,25 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
             return function * (next) {
                 // Database Connectivity Issue
                 if (err.code == "ECONNREFUSED") {
-                    return yield admin.invalidPost(pre, [errors.DB_ERROR("database connection issue")]);
+                    return yield geocache.invalidPost(pre, [errors.DB_ERROR("database connection issue")]);
                 }
                 // Malformed Cypher Query
                 else if (err.neo4j) {
                     if (err.neo4j.code && err.neo4j.code == "Neo.ClientError.Statement.InvalidSyntax") {
-                        return yield admin.invalidPost(pre, [errors.DB_ERROR("malformed query")]);
+                        return yield geocache.invalidPost(pre, [errors.DB_ERROR("malformed query")]);
                     } else {
-                        return yield admin.invalidPost(pre, [errors.DB_ERROR("neo4j error")]);
+                        return yield geocache.invalidPost(pre, [errors.DB_ERROR("neo4j error")]);
                     }
                 } else {
                     // Unknown Error
                     if (err.success !== undefined) {
-                        return yield admin.invalidPost(pre, err.errors);
+                        return yield geocache.invalidPost(pre, err.errors);
                     } else {
-                        return yield admin.invalidPost(pre, [errors.UNKNOWN_ERROR("loggin in admin --- " + err)]);
+                        return yield geocache.invalidPost(pre, [errors.UNKNOWN_ERROR("loggin in admin --- " + err)]);
                     }
                 }
             };
         }
     }
-    return admin;
+    return geocache;
 };

@@ -22,12 +22,18 @@
 
 module.exports = function Validate(errors, _) {
 
+    var _ = require('lodash');
+    var moment = require('moment');
+
     var RegEx = require('./RegEx.js');
     var Dates = require('./Dates.js');
 
+    var adminValidate = require('./admin/AdminValidate.js')();
+
     var validate = {
-        regex: RegEx(errors),
-        dates: Dates(errors),
+        admin: adminValidate,
+        // regex: RegEx(errors),
+        // dates: Dates(errors),
         isEmpty: function isEmpty(data) {
             if (typeof(data) == "number" || typeof(data) == "boolean") {
                 return false;
@@ -172,8 +178,6 @@ module.exports = function Validate(errors, _) {
                 });
                 return f != -1;
             });
-
-            console.log("IN BEFORE");
             return validate.schema(modifiedSchema, pre);
         },
         attribute: function attribute(sch, pre, att) {
@@ -201,7 +205,54 @@ module.exports = function Validate(errors, _) {
                 valid: false,
                 errors: [errors.ID_INVALID(pre)]
             };
+        },
+        regex: function(condition) {
+            return function(attribute, value) {
+                var errorArray = [];
+                var valid = condition.regex.test(value);
+                if (!valid) {
+                    errorArray.push(condition.error(attribute));
+                    return {
+                        valid: false,
+                        errors: errorArray
+                    };
+                } else {
+                    return {
+                        valid: true,
+                        data: value
+                    };
+                }
+            };
+        },
+        dateRange: function(range) {
+            return function(attribute, value) {
+                var date = moment(value, "YYYY-MM-DDTHH:mm:ss.SSSZ", true);
+                var valid = date.isValid();
+
+                if (valid) {
+                    if (date.isBefore(range.min) || date.isAfter(range.max)) {
+                        return {
+                            valid: false,
+                            errors: [range.error]
+                        };
+                    } else {
+                        return {
+                            valid: true,
+                            data: date.toISOString()
+                        };
+                    }
+                } else {
+                    return {
+                        valid: false,
+                        errors: errors.form.DATE_INVALID(attribute)
+                    };
+                }
+            }
         }
     };
+
+    // Merge Database Utility Functions for Models
+    _.merge(validate, adminValidate);
+
     return validate;
 };

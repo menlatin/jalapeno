@@ -20,9 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-var app = require('../server.js');
+var app = require('../../../server.js');
 
-var DB = require('../Database2.js')('http://localhost:7474');
+var DB = require('../Database.js')('http://localhost:7474');
 
 var Errors = require('../Errors.js');
 var errors = new Errors();
@@ -37,7 +37,7 @@ var fs = require('fs');
 var bcrypt = require('co-bcrypt');
 
 // Public Key Used for JWT Verification
-var publicKey = fs.readFileSync('ssl/demo.rsa.pub');
+var publicKey = fs.readFileSync('api/v1/auth/ssl/demo.rsa.pub');
 
 var test = {
     app: app,

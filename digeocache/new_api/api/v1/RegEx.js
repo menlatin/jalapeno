@@ -127,6 +127,12 @@ module.exports = function RegEx(errors) {
 							error: errors.geocache.MESSAGE_INVALID 
 						}
 					),
+					LATITUDE: regexTest(
+						{
+							regex: /^[a-zA-Z0-9]+$/,
+							error: errors.geocache.LATITUDE_INVALID
+						}
+					),
 					CURRENCY: regexTest(
 						{ 
 							regex: /^[a-zA-Z0-9]+$/, 

@@ -27,25 +27,25 @@ module.exports = function Errors() {
         */
         UNAUTHORIZED: function() {
             return {
-                code: 401,
+                code: 1001,
                 message: "Unauthorized to view this resource."
             };
         },
         UNPRIVILEGED: function() {
             return {
-                code: 401,
+                code: 1002,
                 message: "Unprivileged to view this resource."
             };
         },
         UNSUPPORTED: function() {
             return {
-                code: 402,
+                code: 1003,
                 message: "Unsupported API operation."
             };
         },
         UNKNOWN_ERROR: function(context) {
             return {
-                code: 1001,
+                code: 1004,
                 message: "Unknown error: " + context
             };
         },
@@ -54,162 +54,76 @@ module.exports = function Errors() {
         */
         DB_ERROR: function(context) {
             return {
-                code: 1002,
+                code: 2001,
                 message: "DB query error: " + context
             }
         },
         DB_EMPTY_RESULT: function() {
             return {
-                code: 1003,
+                code: 2002,
                 message: "DB query result was empty"
             }
         },
         DB_EXPECTED_ONE_RESULT: function() {
             return {
-                code: 1004,
+                code: 2003,
                 message: "DB query result expected only one result and found many"
             }
         },
         DB_UNDEFINED_RESULT: function() {
             return {
-                code: 1005,
+                code: 2004,
                 message: "DB query result was undefined"
             }
         },
         /*
             Validation Errors
         */
-        ID_INVALID: function(id) {
+        LOGIN_FAILURE: function() {
             return {
-                code: 1006,
-                message: id + " is not a valid id"
-            }
+                code: 3001,
+                message: "bad credentials"
+            };
         },
-        UNIDENTIFIABLE: function(modelName) {
+        UNIDENTIFIABLE: function(id) {
             return {
-                code: 5001,
-                message: "unidentifiable from URL"
-            }
-        },
-        INVALID_UPDATE: function() {
-            return {
-                code: 5002,
-                message: "update has invalid values"
+                code: 3002,
+                message: "unidentifiable from: " + id
             }
         },
         ATTRIBUTE_TEST_REQUIRED: function(attribute) {
             return {
-                code: 2001,
-                message: attribute + " mandates a test function for validation"
+                code: 3003,
+                message: attribute + " mandates a test"
             };
         },
         ATTRIBUTE_REQUIRED: function(attribute) {
             return {
-                code: 2002,
+                code: 3004,
                 attribute: attribute,
                 message: attribute + " required"
             };
         },
         ATTRIBUTE_INVALID: function(attribute) {
             return {
-                code: 2003,
+                code: 3005,
                 attribute: attribute,
-                message: attribute + " required"
+                message: attribute + " invalid"
             };
-        },
-        USERNAME_NOT_FOUND: function(attribute) {
-            return {
-                code: 3001,
-                attribute: attribute,
-                message: "username not found"
-            };
-        },
-        EMAIL_NOT_FOUND: function(attribute) {
-            return {
-                code: 3002,
-                attribute: attribute,
-                message: "email not found"
-            };
-        },
-        PASSWORD_INCORRECT: function(attribute) {
-            return {
-                code: 3003,
-                attribute: attribute,
-                message: "the password you entered is incorrect"
-            };
-        },
-        LOGIN_FAILURE: function() {
-            return {
-                code: 3004,
-                message: "failed to login with these credentials, please try again"
-            };
-        }
-        ID_NOT_FOUND: function() {
-            return {
-                code: 4001,
-                message: "user not found for this id"
-            }
         },
         USERNAME_TAKEN: function(attribute) {
             return {
-                code: 4003,
+                code: 3006,
                 attribute: attribute,
                 message: "username taken"
             };
         },
         EMAIL_TAKEN: function(attribute) {
             return {
-                code: 4008,
+                code: 3007,
                 attribute: attribute,
                 message: "email taken"
             };
-        },
-
-
-        // Geocache POST Validation Errors
-        geocache: {
-            TITLE_REQUIRED: function(attribute) {
-                return {
-                    code: 5001,
-                    attribute: attribute,
-                    message: "title required"
-                };
-            },
-            TITLE_INVALID: function(attribute) {
-                return {
-                    code: 5002,
-                    attribute: attribute,
-                    message: "title invalid (must be ...)"
-                };
-            },
-            MESSAGE_REQUIRED: function(attribute) {
-                return {
-                    code: 5003,
-                    attribute: attribute,
-                    message: "message required"
-                };
-            },
-            MESSAGE_INVALID: function(attribute) {
-                return {
-                    code: 5004,
-                    attribute: attribute,
-                    message: "message invalid (must be ...)"
-                };
-            },
-            CURRENCY_REQUIRED: function(attribute) {
-                return {
-                    code: 5005,
-                    attribute: attribute,
-                    message: "currency required"
-                };
-            },
-            CURRENCY_INVALID: function(attribute) {
-                return {
-                    code: 5006,
-                    attribute: attribute,
-                    message: "currency invalid (must be ...)"
-                };
-            }
         }
     });
     return errors;

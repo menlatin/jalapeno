@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-module.exports = function Admin(db, bcrypt, parse, errors, validate) {
+module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utility) {
 
     var admin = {
         schema: [{
@@ -81,40 +81,55 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate) {
             required: false,
             auto: true
         }],
-        invalidPost: function * (next) {
-            var json = db.util.json_response(this.req.data, this.req.errors);
-            this.type = "application/json";
-            this.body = json;
+        success: function(data) {
+            return function * (next) {
+                var json = utility.json_response(data, null);
+                this.type = "application/json";
+                this.body = json;
+            };
         },
-        successPost: function * (next) {
-            var json = db.util.json_response(this.req.data, null);
-            this.type = "application/json";
-            this.body = json;
+        invalid: function(errors) {
+            return function * (next) {
+                var json = utility.json_response(null, errors);
+                this.type = "application/json";
+                this.body = json;
+            };
+        },
+        invalidPost: function(pre, errors) {
+            return function * (next) {
+                // Remove Password From Returned Prefill
+                if (pre && pre.password) {
+                    delete pre.password;
+                }
+                var json = utility.json_response(pre, errors);
+                this.type = "application/json";
+                this.body = json;
+            };
         },
         post: function * (next) {
             // console.log("admin.post");
             try {
+                // TODO: Be sure this is being requested by authenticated admin w/proper privileges
+
                 var admin_pre = yield parse(this);
                 var admin_test = validate.schema(admin.schema, admin_pre);
-
                 if (admin_test.valid) {
-
-                    // Make sure this username/email are not already in use
-                    var usernameResults = yield db.util.admin_by_username(admin_test.data.username);
-                    var emailResults = yield db.util.admin_by_email(admin_test.data.email);
-
-                    // Username Already In DB
-                    if (usernameResults.length != 0) {
-                        this.req.data = admin_pre;
-                        this.req.errors = [errors.user.USERNAME_TAKEN("username")];
-                        return yield admin.invalidPost;
+                    // Check if username / email already in use
+                    var checkUsername = yield db.admin_username_taken(admin_test.data.username);
+                    if (checkUsername.success) {
+                        if (checkUsername.taken) {
+                            return yield admin.invalidPost(admin_pre, [errors.user.USERNAME_TAKEN("username")]);
+                        }
+                    } else {
+                        return yield admin.invalidPost(admin_pre, checkUsername.errors);
                     }
-
-                    // Email Already in DB
-                    if (emailResults.length != 0) {
-                        this.req.data = admin_pre;
-                        this.req.errors = [errors.user.EMAIL_TAKEN("email")];
-                        return yield admin.invalidPost;
+                    var checkEmail = yield db.admin_email_taken(admin_test.data.email);
+                    if (checkEmail.success) {
+                        if (checkEmail.taken) {
+                            return yield admin.invalidPost(admin_pre, [errors.user.EMAIL_TAKEN("email")]);
+                        }
+                    } else {
+                        return yield admin.invalidPost(admin_pre, checkEmail.errors);
                     }
 
                     // Generate salt/hash using bcrypt
@@ -131,214 +146,227 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate) {
                     admin_test.data.created_on = now;
                     admin_test.data.updated_on = now;
                     admin_test.data.login_on = "";
-
-                    var results = yield db.util.admin_create(admin_test.data);
-                    if (!results) {
-                        // DB Failure to POST
-                        this.req.data = null;
-                        this.req.errors = [errors.DB_ERROR("failed to create admin")];
-                        return yield admin.invalidPost;
+                    // Request DB Create Node and Respond Accordingly
+                    var create = yield db.admin_create(admin_test.data);
+                    if (create.success) {
+                        return yield admin.success(create.data);
                     } else {
-                        // Request was successful.
-                        this.req.data = results;
-                        return yield admin.successPost;
+                        return yield admin.invalidPost(admin_pre, create.errors);
                     }
+
                 } else {
                     // Request was not valid,
-                    this.req.data = admin_pre;
-                    this.req.errors = admin_test.errors;
-                    return yield admin.invalidPost;
+                    return yield admin.invalidPost(admin_pre, admin_test.errors);
                 }
-            } catch (err) {
-                // Save Input Which Caused an Error
-                this.req.data = admin_pre;
-
-                // Database Connectivity Issue
-                if (err.code == "ECONNREFUSED") {
-                    this.req.errors = [errors.DB_ERROR("database connection issue")];
-                    return yield admin.invalidPost;
-                }
-                // Malformed Cypher Query
-                else if (err.neo4j) {
-                    if (err.neo4j.code && err.neo4j.code == "Neo.ClientError.Statement.InvalidSyntax") {
-                        this.req.errors = [errors.DB_ERROR("malformed query")];
-                        return yield admin.invalidPost;
-                    } else {
-                        this.req.errors = [errors.DB_ERROR("neo4j error")];
-                        return yield admin.invalidPost;
-                    }
-                } else {
-                    // Unknown Error
-                    this.req.errors = [errors.UNKNOWN_ERROR("creating admin" + err)];
-                    return yield admin.invalidPost;
-                }
+            } catch (e) {
+                return yield admin.catchErrors(e, admin_pre);
             }
-        },
-        invalidGet: function * (next) {
-            var json = db.util.json_response(null, this.req.errors);
-            this.type = "application/json";
-            this.body = json;
-        },
-        successGet: function * (next) {
-            var json = db.util.json_response(this.req.data, null);
-            this.type = "application/json";
-            this.body = json;
         },
         get: function * (next) {
             // console.log("admin.get");
-
-            function getQueryVariable(queryStr, queryVar) {
-                var queryVars = queryStr.split('&');
-                for (var i = 0; i < queryVars.length; i++) {
-                    var pair = queryVars[i].split('=');
-                    if (decodeURIComponent(pair[0]) == queryVar) {
-                        return decodeURIComponent(pair[1]);
-                    }
-                }
-                return null;
-            }
-
             try {
-                var id_test = validate.id(this.params.id);
+                // TODO: Be sure this is being requested by authenticated admin w/proper privileges
 
-                // ID Provided to GET -> Return User w/ID as JSON Object
-                if (id_test.valid) {
-                    var results = yield db.util.admin_by_id(id_test.data.toString());
-                    if (!results || results.length == 0) {
-                        this.req.errorMessage = "Could not retreive admin with this id."
-                        this.req.errors = [errors.user.ID_NOT_FOUND()];
-                        return yield admin.invalidGet;
+                // No parameter provided in URL
+                if (this.params.id == undefined && this.params.id == null) {
+                    // Return all admins      
+                    var allAdmins = yield db.admins_all();
+                    if (allAdmins.success) {
+                        return yield admin.success(allAdmins.data);
                     } else {
-                        this.req.data = results;
-                        return yield admin.successGet;
+                        return yield admin.invalid(allAdmins.errors);
                     }
                 }
-                // ID Not Provided
-                else if (!id_test.valid && (this.params.id === undefined || this.params.id === null)) {
-
-                    // Check URL querystring for username or email filter
-                    var queryUsername = getQueryVariable(this.request.querystring, "username");
-                    var queryEmail = getQueryVariable(this.request.querystring, "email");
-
-                    if (queryUsername && queryEmail) {
-                        this.req.errorMessage = "Admin username and email must be queried independently.";
-                        this.req.errors = [errors.UNKNOWN_ERROR("username and email must be queried independently")];
-                        return yield admin.invalidGet;
-                    } else if (queryUsername) {
-                        var testUsername = validate.attribute(admin.schema, queryUsername, "username");
-                        if (testUsername.valid) {
-                            var usernameResults = yield db.util.admin_by_username(testUsername.data);
-                            if (!usernameResults || usernameResults.length == 0) {
-                                this.req.errorMessage = "Could not retrieve admin by username.";
-                                this.req.errors = [errors.DB_ERROR("failed to get admin by username")];
-                                return yield admin.invalidGet;
-                            } else {
-                                this.req.data = usernameResults;
-                                return yield admin.successGet;
-                            }
-                        } else {
-                            this.req.errorMessage = "Queried username is not a valid username."
-                            this.req.errors = testUsername.errors;
-                            return yield admin.invalidGet;
-                        }
-                    } else if (queryEmail) {
-                        var testEmail = validate.attribute(admin.schema, queryEmail, "email");
-                        if (testEmail.valid) {
-                            var emailResults = yield db.util.admin_by_email(testEmail.data);
-                            if (!emailResults || emailResults.length == 0) {
-                                this.req.errorMessage = "Could not retrieve admin by email.";
-                                this.req.errors = [errors.DB_ERROR("failed to get admin by email")];
-                                return yield admin.invalidGet;
-                            } else {
-                                this.req.data = emailResults;
-                                return yield admin.successGet;
-                            }
-                        } else {
-                            this.req.errorMessage = "Queried email is not a valid email."
-                            this.req.errors = testEmail.errors;
-                            return yield admin.invalidGet;
-                        }
-                    }
-                    // If username and email query parameters not present, return all admins
-                    var results = yield db.util.admins_all();
-                    if (!results) {
-                        this.req.errorMessage = "Could not retrieve admin list.";
-                        this.req.errors = [errors.DB_ERROR("failed to get admins")];
-                        return yield admin.invalidGet;
-                    } else if (results.length == 0) {
-                        this.req.errorMessage = "There are no admins in your database.";
-                        this.req.errors = [errors.UNKNOWN_ERROR("there are no admins in your database")];
-                        return yield admin.invalidGet;
-                    } else {
-                        this.req.data = results;
-                        return yield admin.successGet;
-                    }
-                }
-                // Invalid URL Construction
+                // Parameter exists in URL
                 else {
-                    this.req.errorMessage = "Admin id must be a valid integer."
-                    this.req.errors = [errors.UNKNOWN_ERROR("bad url getting admin(s)")];
-                    return yield admin.invalidGet;
+                    // Try to identify existing admin
+                    var findAdmin = yield admin.identifyFromURL(this.params.id);
+                    if (findAdmin.success) {
+                        return yield admin.success(findAdmin.data);
+                    } else {
+                        return yield admin.invalid(findAdmin.errors);
+                    }
                 }
             } catch (e) {
                 // Unknown Error
-                this.req.errorMessage = "Could not retrieve admin data.";
-                this.req.errors = [errors.UNKNOWN_ERROR("getting admin(s)")];
-                return yield admin.invalidGet;
+                return yield admin.catchErrors(e, null);
             }
         },
         put: function * (next) {
             // console.log("admin.put");
             try {
+                // TODO: Be sure this is being requested by authenticated admin w/proper privileges
+
+                // Request payload
                 var admin_pre = yield parse(this);
-                var admin_test = validate.schema(admin.schema, admin_pre);
 
-                if (admin_test.valid) {
-                    // Generate salt/hash using bcrypt
-                    var salt = yield bcrypt.genSalt(10);
-                    var hash = yield bcrypt.hash(admin_test.data.password, salt);
-
-                    // Delete password key/value from post object, replace w/hash
-                    var pw = admin_test.data.password;
-                    delete admin_test.data.password;
-                    admin_test.data.hash = hash;
-
-                    // Add automatic date fields
-                    var now = new Date;
-                    admin_test.data.created_on = now;
-                    admin_test.data.updated_on = now;
-                    admin_test.data.login_on = "";
-
-                    var results = (yield db.util.admin_update(admin_test.data));
-
-                    if (!results) {
-                        var json = errors.admins.REGISTER_ERROR;
-                        this.status = 200;
-                        this.body = json;
+                // No parameter provided in URL
+                if (this.params.id == undefined && this.params.id == null) {
+                    // Perhaps request is for a batch update
+                    // batch_test = validate.schemaForBatchUpdate(admin.schema, admin_pre);
+                    // if (batch_test.valid) {
+                    //     // Loop through validated data and perform updates
+                    // }
+                    // else {
+                    //     return yield admin.invalidPost(admin_pre, batch_test.errors);
+                    // }
+                    return yield admin.invalidPost(admin_pre, [errors.UNSUPPORTED()]);
+                }
+                // Parameter exists in URL
+                else {
+                    // Try to identify existing admin
+                    var existingAdmin = undefined;
+                    var findAdmin = yield admin.identifyFromURL(this.params.id);
+                    if (findAdmin.success) {
+                        existingAdmin = findAdmin.data;
                     } else {
-                        var json = db.util.json_response(results);
-                        console.log(json);
-                        this.type = "application/json";
-                        this.status = 200;
-                        this.body = json;
+                        return yield admin.invalidPost(admin_pre, findAdmin.errors);
+                    }
+                    // If we got this far, we must have found a match.
+                    // Now validate what we're trying to update
+                    admin_test = validate.schemaForUpdate(admin.schema, admin_pre);
+                    if (admin_test.valid) {
+                        // Is the admin trying to change their password?
+                        if (admin_test.data.password) {
+                            // Generate new salt/hash using bcrypt
+                            var salt = yield bcrypt.genSalt(10);
+                            var hash = yield bcrypt.hash(admin_test.data.password, salt);
+                            // Delete password key/value from update object, replace w/hash
+                            var pw = admin_test.data.password;
+                            delete admin_test.data.password;
+                            admin_test.data.hash = hash;
+                        }
+                        // Add automatic date fields
+                        var now = new Date();
+                        admin_test.data.updated_on = now;
+                        // Request DB update
+                        var adminUpdate = yield db.admin_update(admin_test.data, existingAdmin.id);
+                        if (adminUpdate.success) {
+                            return yield admin.success(adminUpdate.data);
+                        } else {
+                            return yield admin.invalidPost(admin_pre, adminUpdate.errors);
+                        }
+                    } else {
+                        return yield admin.invalidPost(admin_pre, admin_test.errors);
                     }
                 }
             } catch (e) {
-                var json = errors.admins.UNKNOWN_ERROR;
-                this.status = 200;
-                this.body = json;
+                return yield admin.catchErrors(e, admin_pre);
             }
         },
         del: function * (next) {
             // console.log("admin.del");
             try {
-                var id = this.params.id
-                var success = true;
-                this.assert(success, 500, 'Failed to delete admin');
+                // TODO: Be sure this is being requested by authenticated admin w/proper privileges
+
+                // Request payload
+                var admin_pre = yield parse(this);
+
+                // No parameter provided in URL
+                if (this.params.id == undefined && this.params.id == null) {
+                    // Perhaps request is for a batch delete
+                    // batch_test = validate.schemaForBatchDelete(admin.schema, admin_pre);
+                    // if (batch_test.valid) {
+                    //     // Loop through validated data and perform deletes
+                    // }
+                    // else {
+                    //     return yield admin.invalidPost(admin_pre, batch_test.errors);
+                    // }
+                    return yield admin.invalidPost(admin_pre, [errors.UNSUPPORTED()]);
+                }
+                // Parameter exists in URL
+                else {
+                    // Try to identify existing admin
+                    var existingAdmin = undefined;
+                    var findAdmin = yield admin.identifyFromURL(this.params.id);
+                    if (findAdmin.success) {
+                        existingAdmin = findAdmin.data;
+                    } else {
+                        return yield admin.invalidPost(admin_pre, findAdmin.errors);
+                    }
+                    // If we got this far, we must have found a match to delete.
+                    var adminDelete = yield db.admin_delete(admin_test.data, existingAdmin.id);
+                    if (adminDelete.success) {
+                        return yield admin.success(adminDelete.data);
+                    } else {
+                        return yield admin.invalidPost(admin_pre, adminDelete.errors);
+                    }
+                }
             } catch (e) {
-                this.redirect('/error');
+                return yield admin.catchErrors(e, admin_pre);
             }
+        },
+        identifyFromURL: function(params_id) {
+            return function * (next) {
+                // Try to identify existing admin
+                var response = {};
+                var id_test = validate.id(params_id);
+                var username_test = validate.attribute(admin.schema, params_id, "username");
+                var email_test = validate.attribute(admin.schema, params_id, "email");
+
+                if (id_test.valid) {
+                    var adminByID = yield db.admin_by_id(id_test.data.toString());
+                    if (adminByID.success) {
+                        response.success = true;
+                        response.data = adminByID.data;
+                        return response;
+                    } else {
+                        response.success = false;
+                        response.errors = adminByID.errors;
+                        return response;
+                    }
+                } else if (username_test.valid) {
+                    var adminByUsername = yield db.admin_by_username(username_test.data);
+                    if (adminByUsername.success) {
+                        response.success = true;
+                        response.data = adminByUsername.data;
+                        return response;
+                    } else {
+                        response.success = false;
+                        response.errors = adminByUsername.errors;
+                        return response;
+                    }
+                } else if (email_test.valid) {
+                    var adminByEmail = yield db.admin_by_email(email_test.data);
+                    if (adminByEmail.success) {
+                        response.success = true;
+                        response.data = adminByEmail.data;
+                        return response;
+                    } else {
+                        response.success = false;
+                        response.errors = adminByEmail.errors;
+                        return response;
+                    }
+                } else {
+                    response.success = false;
+                    response.errors = [errors.admin.UNIDENTIFIABLE()];
+                    return response;
+                }
+            };
+        },
+        catchErrors: function(err, pre) {
+            return function * (next) {
+                // Database Connectivity Issue
+                if (err.code == "ECONNREFUSED") {
+                    return yield admin.invalidPost(pre, [errors.DB_ERROR("database connection issue")]);
+                }
+                // Malformed Cypher Query
+                else if (err.neo4j) {
+                    if (err.neo4j.code && err.neo4j.code == "Neo.ClientError.Statement.InvalidSyntax") {
+                        return yield admin.invalidPost(pre, [errors.DB_ERROR("malformed query")]);
+                    } else {
+                        return yield admin.invalidPost(pre, [errors.DB_ERROR("neo4j error")]);
+                    }
+                } else {
+                    // Unknown Error
+                    if (err.success !== undefined) {
+                        return yield admin.invalidPost(pre, err.errors);
+                    } else {
+                        return yield admin.invalidPost(pre, [errors.UNKNOWN_ERROR("loggin in admin --- " + err)]);
+                    }
+                }
+            };
         }
-    };
+    }
     return admin;
 };

@@ -25,7 +25,6 @@ module.exports = function RegEx(errors) {
 	function regexTest(condition) {
 		return function(attribute, value) {
 			var errorArray = [];
-			// Loop Through And Test All Conditions for This Value Validation
 			var valid = condition.regex.test(value);
 			if(!valid) {
 				errorArray.push(condition.error(attribute));
@@ -44,7 +43,7 @@ module.exports = function RegEx(errors) {
 					// Admin Validation Regular Expressions
 					USERNAME: regexTest(
 						{ 
-							regex: /^[a-zA-Z0-9][a-zA-Z0-9_]{2,29}$/, 
+							regex: /^[a-zA-Z][a-zA-Z0-9_]{2,29}$/, 
 							error: errors.user.USERNAME_INVALID 
 						}
 					),
@@ -81,7 +80,7 @@ module.exports = function RegEx(errors) {
 					// User Validation Regular Expressions
 					USERNAME: regexTest(
 						{ 
-							regex: /^[a-zA-Z0-9][a-zA-Z0-9_]{2,29}$/, 
+							regex: /^[a-zA-Z][a-zA-Z0-9_]{2,29}$/, 
 							error: errors.user.USERNAME_INVALID 
 						}
 					),

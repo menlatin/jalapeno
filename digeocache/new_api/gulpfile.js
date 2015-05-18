@@ -23,7 +23,7 @@ gulp.task('nodemon', function() {
 
 gulp.task('watch', function() {
     gulp.watch(
-        ['*.js', 'api/*.js', 'test/test_*.js'], // files to watch
+        ['*.js', 'api/*.js', 'test/*.js'], // files to watch
         {
             read: true
         }, ['mocha'] // tasks to run when above files change

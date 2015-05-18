@@ -22,27 +22,30 @@
 
 var app = require('../server.js');
 
-var Database = require('../Database.js');
-var Errors = require('../Errors.js');
+var DB = require('../Database2.js')('http://localhost:7474');
 
-var db = new Database('http://localhost:7474');
+var Errors = require('../Errors.js');
 var errors = new Errors();
 
 var _ = require('lodash');
+var Q = require('q');
 var request = require('co-supertest').agent(app.listen());
 var expect = require('chai').expect;
 var assert = require('chai').assert;
 var jwt = require('koa-jwt');
 var fs = require('fs');
+var bcrypt = require('co-bcrypt');
 
 // Public Key Used for JWT Verification
 var publicKey = fs.readFileSync('ssl/demo.rsa.pub');
 
 var test = {
     app: app,
-    db: db,
+    db: DB,
     errors: errors,
+    bcrypt: bcrypt,
     _: _,
+    Q: Q,
     request: request,
     expect: expect,
     assert: assert,
@@ -67,15 +70,29 @@ var test = {
             expect(found, "Expected error code " + expectedError.code + "(" + expectedError.message + ")").to.not.be.undefined;
         });
     },
-    verifyToken: function(response) {
+    verifyAdminToken: function(response) {
         expect(response.body.data.length).to.equal(1);
         var data = response.body.data[0];
         expect(data.token).to.exist;
         // verify a token symmetric - synchronous
         var decoded = jwt.verify(data.token, publicKey);
-        expect(decoded.username).to.exist; // expect "username" saved at token signing to exist in decoded token
-        expect(decoded.iat).to.exist; // expect "issued-at" iat timestamp to exist in decoded token
-        expect(decoded.exp).to.exist; // expect "expiration" exp timestamp to exist in decoded token
+        expect(decoded.username).to.exist; // expect "username" in token claim
+        expect(decoded.admin).to.be.true; // expect "admin" in token claim to be true
+        expect(decoded.iat).to.exist; // expect "issued-at" timestamp in token claim
+        expect(decoded.exp).to.exist; // expect "expiration" timestamp in token claim
+        return data.token;
+    },
+    verifyUserToken: function(response) {
+        expect(response.body.data.length).to.equal(1);
+        var data = response.body.data[0];
+        expect(data.token).to.exist;
+        // verify a token symmetric - synchronous
+        var decoded = jwt.verify(data.token, publicKey);
+        expect(decoded.username).to.exist; // expect "username" in token claim
+        expect(decoded.admin).to.be.false; // expect "admin" in token claim to be false
+        expect(decoded.iat).to.exist; // expect "issued-at" timestamp in token claim
+        expect(decoded.exp).to.exist; // expect "expiration" timestamp in token claim
+        return data.token;
     }
 };
 

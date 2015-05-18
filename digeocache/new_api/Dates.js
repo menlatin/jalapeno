@@ -22,55 +22,60 @@
 
 module.exports = function Dates(errors) {
 
-	function dateFromString(dateString) {
-		var date = new Date(dateString);
-		if(date && date.getFullYear()>0) {
-			return date;
-		}
-		else {
-			return null;
-		}
-	}
+    var moment = require('moment');
 
-	function birthdayRangeTest() {
-		return function(attribute, value) {
-			var minAge = 18;
-			var maxAge = 120;
-			var minDate = new Date();
-			var maxDate = new Date();
-			var currentYear = minDate.getFullYear();
-			minDate.setFullYear(currentYear-maxAge);
-			maxDate.setFullYear(currentYear-minAge);
+    function momentFromString(dateString) {
+        var dateAsMoment = moment(dateString, "YYYY-MM-DDTHH:mm:ss.SSSZ", true);
+        var valid = dateAsMoment.isValid();
+        if (valid) {
+            return dateAsMoment;
+        } else {
+            return null;
+        }
+    }
 
-			var date = dateFromString(value);
-			if (date !== null) {
-				if((date < minDate) && (date > maxDate)) {
-					return {valid:false,errors:errors.user.BIRTHDAY_INVALID(attribute,minAge,maxAge)};
-					
-				}
-				else {
-					return {valid:true,data:date.toISOString()};
-				}
-			}
-			else {
-				return {valid:false,errors:errors.form.DATE_INVALID(attribute)};
-			}
-		}
-	}
-	var dates = 
-		{
-			test: {
-				admin: {
-					// Admin Validation Regular Expressions
-					BIRTHDAY: birthdayRangeTest()
-				},
-				user: {
-					BIRTHDAY: birthdayRangeTest()
-				},
-				geocache: {
+    function birthdayRangeTest() {
+        return function(attribute, value) {
+            var minAge = 18;
+            var maxAge = 120;
 
-				}
-			}
-		};
-	return dates;
+            var minMoment = moment().subtract(maxAge, 'years');
+            var maxMoment = moment().subtract(minAge, 'years');
+            var date = momentFromString(value);
+
+            if (date !== null) {
+                if (date.isBefore(minMoment) || date.isAfter(maxMoment)) {
+                    return {
+                        valid: false,
+                        errors: errors.user.BIRTHDAY_INVALID(attribute, minAge, maxAge)
+                    };
+                } else {
+                    return {
+                        valid: true,
+                        data: date.toISOString()
+                    };
+                }
+            } else {
+                return {
+                    valid: false,
+                    errors: errors.form.DATE_INVALID(attribute)
+                };
+            }
+        }
+    }
+    var dates = {
+        test: {
+            admin: {
+                // Admin Validation Regular Expressions
+                BIRTHDAY: birthdayRangeTest()
+            },
+            user: {
+                BIRTHDAY: birthdayRangeTest()
+            },
+            geocache: {
+
+            }
+        }
+    };
+    return dates;
 }

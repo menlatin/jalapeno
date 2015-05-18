@@ -36,18 +36,6 @@ module.exports = function Database(configuration) {
 				this.cypher(input, callback);
 			}.bind(this.dbx);
 		},
-		json_response: function(data, errors) {
-			var obj = {};
-			if(data) { obj.data = data; }
-			if(errors) { obj.errors = errors; }
-			return JSON.stringify(obj, null, 4);
-		},
-		object_response: function(data, errors) {
-			var obj = {};
-			if(data) { obj.data = data; }
-			if(errors) { obj.errors = errors; }
-			return obj;
-		},
 		/* Admin Cypher Queries */
 		admin_return: function(alias) {
 			return " id("+alias+") AS id, "+ 
@@ -93,6 +81,7 @@ module.exports = function Database(configuration) {
 		admin_by_username: function(username) {
 			var query = "MATCH (a:Admin) WHERE a.username = \"" + username + 
 						"\" RETURN " + this.admin_return("a");
+						console.log("QUERY  =", query);
 			return this.cypher(query);
 		},
 		admin_by_username_for_login: function(username) {

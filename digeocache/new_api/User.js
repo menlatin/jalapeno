@@ -20,34 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-module.exports = function App() {
-	var path = require('path');
-	var koa = require('koa');
-	// var forceSSL = require('koa-force-ssl');
-	var logger = require('koa-logger');
-	// var userAgent = require('koa-useragent');
-	var staticCache = require('koa-static-cache');
-	
-	var app = koa();
+module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility) {
 
-	// app.use(logger());
-	// app.use(userAgent());
-
-	// Make Static Content Available in 'public' Folder
-	var options = {
-		dir: path.join(__dirname, '/public'),
-		maxAge: 60*60*24*365,
-		cacheControl: "",
-		buffer: true,
-		gzip: true,
-		alias: {},
-		prefix: "/public",
-		dynamic: true
-	};
-
-	var files = {};
-
-	app.use(staticCache(path.join(__dirname, '/public'), options, files));
-	
-	return app;
+    var user = {
+    	post: {
+    		
+    	}
+    };
+    return user;
 };

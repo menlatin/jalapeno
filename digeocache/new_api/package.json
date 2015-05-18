@@ -26,7 +26,9 @@
     "koa-router": "4.3.2",
     "koa-static-cache": "3.1.1",
     "lodash": "3.8.0",
-    "neo4j": "2.0.0-RC1"
+    "moment": "2.10.3",
+    "neo4j": "2.0.0-RC1",
+    "q": "1.4.0"
   },
   "devDependencies": {
     "co": "4.5.4",
@@ -38,7 +40,8 @@
     "gulp-watch": "4.2.4",
     "chai": "2.3.0",
     "supertest": "0.15.0",
-    "lodash": "3.8.0"
+    "lodash": "3.8.0",
+    "moment": "2.10.3"
   },
   "engines": {
     "node": "v0.12.2"

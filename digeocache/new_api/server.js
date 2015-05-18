@@ -36,13 +36,17 @@ var _ = require('lodash');
 var config = require('./config');
 
 var App = require('./App.js');
-var Database = require('./Database.js');
+var Utility = require('./Utility.js');
+
 var Errors = require('./Errors.js');
 var Validate = require('./Validate.js');
 var Router = require('./Router.js');
 
 var AdminLogin = require('./AdminLogin.js');
 var Admin = require('./Admin.js');
+
+var UserLogin = require('./UserLogin.js');
+var User = require('./User.js');
 
 // Public Key Used for JWT Verification
 var publicKey = fs.readFileSync('ssl/demo.rsa.pub');
@@ -58,17 +62,27 @@ if (app.env === 'development') {
     // Use Error Handler
 }
 
-var db = new Database('http://localhost:7474');
 var errors = new Errors();
-var validate = new Validate(errors);
 
-var adminLogin = new AdminLogin(db, bcrypt, fs, jwt, parse, errors, validate);
-var admin = new Admin(db, bcrypt, parse, errors, validate);
+var db = require('./Database2.js')('http://localhost:7474');
+
+
+var utility = new Utility(errors);
+var validate = new Validate(errors, _);
+
+var adminLogin = new AdminLogin(db, bcrypt, fs, jwt, parse, errors, validate, utility);
+var admin = new Admin(db, bcrypt, parse, errors, validate, jwt, utility);
+
+var userLogin = new UserLogin(db, bcrypt, fs, jwt, parse, errors, validate, utility);
+var user = new User(db, bcrypt, parse, errors, validate, jwt, utility);
 
 var PublicAPI_V1 = require('./api/v1/PublicAPI_V1.js');
-var pubV1 = new PublicAPI_V1(admin, adminLogin);
+var pubV1 = new PublicAPI_V1(admin, adminLogin, user, userLogin);
 var ProtectedAPI_V1 = require('./api/v1/ProtectedAPI_V1.js');
 var apiV1 = new ProtectedAPI_V1(admin);
+
+// Custom 401 handling if you don't want to expose koa-jwt errors to users
+app.use(utility.middleware.custom401);
 
 // Public Routes (do not require valid JWT)
 app.use(mount('/api/v1', pubV1.middleware()));
@@ -76,10 +90,10 @@ app.use(mount('/api/v1', pubV1.middleware()));
 // Private Routes (require valid JWT)
 var checkJWT = jwt({
     secret: publicKey,
-    algorithm: 'RS256'
+    algorithm: 'RS256',
+    key: 'jwtdata'
 })
 app.use(mount('/api/v1', compose([checkJWT, apiV1.middleware()])));
-
 
 var SSLOptions = {
     key: fs.readFileSync('ssl/digeocache-key.pem', 'utf8'),

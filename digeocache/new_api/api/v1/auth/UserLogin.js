@@ -27,13 +27,13 @@ module.exports = function UserLogin(db, bcrypt, fs, jwt, parse, errors, validate
             type: "text",
             required: true,
             auto: false,
-            test: validate.regex.test.user.USERNAME
+            test: validate.user_username()
         }, {
             attribute: "password",
             type: "password",
             required: true,
             auto: false,
-            test: validate.regex.test.user.PASSWORD
+            test: validate.user_password()
         }],
         success: function(data) {
             return function * (next) {
@@ -66,9 +66,9 @@ module.exports = function UserLogin(db, bcrypt, fs, jwt, parse, errors, validate
                 }).indexOf('username');
                 if (login_pre.username.indexOf('@') !== -1) {
                     isEmailAsUsername = true;
-                    modifiedSchema[schemaIndexUsername].test = validate.regex.test.user.EMAIL;
+                    modifiedSchema[schemaIndexUsername].test = validate.user_email();
                 } else {
-                    modifiedSchema[schemaIndexUsername].test = validate.regex.test.user.USERNAME;
+                    modifiedSchema[schemaIndexUsername].test = validate.user_username();
                 }
 
                 var login_test = validate.schema(modifiedSchema, login_pre);

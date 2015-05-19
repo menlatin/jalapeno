@@ -124,6 +124,12 @@ module.exports = function Errors() {
                 attribute: attribute,
                 message: "email taken"
             };
+        },
+        UPDATE_EMPTY: function() {
+            return {
+                code: 3008,
+                message: "update request empty"
+            };
         }
     });
     return errors;

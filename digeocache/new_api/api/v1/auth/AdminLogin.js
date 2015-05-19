@@ -27,13 +27,13 @@ module.exports = function AdminLogin(db, bcrypt, fs, jwt, parse, errors, validat
             type: "text",
             required: true,
             auto: false,
-            test: validate.regex.test.admin.USERNAME
+            test: validate.admin_username()
         }, {
             attribute: "password",
             type: "password",
             required: true,
             auto: false,
-            test: validate.regex.test.admin.PASSWORD
+            test: validate.admin_password()
         }],
         success: function(data) {
             return function * (next) {
@@ -66,9 +66,9 @@ module.exports = function AdminLogin(db, bcrypt, fs, jwt, parse, errors, validat
                 }).indexOf('username');
                 if (login_pre.username.indexOf('@') !== -1) {
                     isEmailAsUsername = true;
-                    modifiedSchema[schemaIndexUsername].test = validate.regex.test.admin.EMAIL;
+                    modifiedSchema[schemaIndexUsername].test = validate.admin_email();
                 } else {
-                    modifiedSchema[schemaIndexUsername].test = validate.regex.test.admin.USERNAME;
+                    modifiedSchema[schemaIndexUsername].test = validate.admin_username();
                 }
 
                 var login_test = validate.schema(modifiedSchema, login_pre);

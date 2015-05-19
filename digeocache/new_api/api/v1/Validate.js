@@ -20,20 +20,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-module.exports = function Validate(errors, _) {
+module.exports = function Validate(errors) {
 
     var _ = require('lodash');
     var moment = require('moment');
 
-    var RegEx = require('./RegEx.js');
-    var Dates = require('./Dates.js');
-
     var adminValidate = require('./admin/AdminValidate.js')();
+    var userValidate = require('./user/userValidate.js')();
 
     var validate = {
-        admin: adminValidate,
-        // regex: RegEx(errors),
-        // dates: Dates(errors),
         isEmpty: function isEmpty(data) {
             if (typeof(data) == "number" || typeof(data) == "boolean") {
                 return false;
@@ -86,7 +81,7 @@ module.exports = function Validate(errors, _) {
                     // Required fields missing results in a validation error
                     if (nonAutoScheme.required) {
                         valid = false;
-                        errorArray.push(errors.form.REQUIRES_ATTRIBUTE(fieldAttribute));
+                        errorArray.push(errors.ATTRIBUTE_REQUIRED(fieldAttribute));
                     }
                     // Otherwise this field can be ignored as empty
                     else {
@@ -97,6 +92,9 @@ module.exports = function Validate(errors, _) {
                 }
                 // The Field is Present, Check for Validity
                 else {
+
+                    console.log("nonAutoScheme.test = ", nonAutoScheme.test);
+
                     if (typeof(nonAutoScheme.test) == "function" && nonAutoScheme.test.length == 2) {
                         var test = nonAutoScheme.test(fieldAttribute, fieldValue ? fieldValue : "");
                         if (test.valid) {
@@ -110,7 +108,7 @@ module.exports = function Validate(errors, _) {
                     // which takes the attribute name and attribute value as parameters.
                     else {
                         valid = false;
-                        errorArray.push(errors.form.REQUIRES_ATTRIBUTE_TEST(requiredFieldAttribute));
+                        errorArray.push(errors.ATTRIBUTE_TEST_REQUIRED(fieldAttribute));
                     }
                 }
             } // end for
@@ -127,27 +125,27 @@ module.exports = function Validate(errors, _) {
                 };
             }
         },
-        schemaForDelete: function schemaForDelete(sch, pre) {
-            var preKeys = _.keys(pre);
-            if (preKeys.length > 1) {
-                return {
-                    valid: false,
-                    errors: [errors.user.DELETE_REQUIRES_UNIQUE_ID()]
-                }
-            } else if (preKeys.length == 0) {
-                return validate.schema(modifiedSchema, pre);
-            } else if (preKeys.length == 1) {
-                if (pre.username || pre.email) {
-                    return validateSchema
-                }
-            }
-        },
+        // schemaForDelete: function schemaForDelete(sch, pre) {
+        //     var preKeys = _.keys(pre);
+        //     if (preKeys.length > 1) {
+        //         return {
+        //             valid: false,
+        //             errors: [errors.user.DELETE_REQUIRES_UNIQUE_ID()]
+        //         }
+        //     } else if (preKeys.length == 0) {
+        //         return validate.schema(modifiedSchema, pre);
+        //     } else if (preKeys.length == 1) {
+        //         if (pre.username || pre.email) {
+        //             return validateSchema
+        //         }
+        //     }
+        // },
         schemaForUpdate: function schemaForUpdate(sch, pre) {
             // Make sure we are providing something to update at all
             if ("false" in pre) {
                 return {
                     valid: false,
-                    errors: [errors.user.UPDATE_ATTRIBUTES_NOT_PROVIDED()]
+                    errors: [errors.UPDATE_EMPTY()]
                 }
             }
             // Make sure we aren't trying to update things we shouldn't
@@ -160,7 +158,7 @@ module.exports = function Validate(errors, _) {
                 if (!updateFieldInSchema || updateFieldInSchema.auto) {
                     // Trying to update a key that DNE or is handled automatically
                     isBadUpdate = true;
-                    errorArray.push(errors.user.UPDATE_ATTRIBUTE_INVALID(key));
+                    errorArray.push(errors.ATTRIBUTE_INVALID(key));
                 }
             });
 
@@ -191,7 +189,7 @@ module.exports = function Validate(errors, _) {
             }
             return {
                 valid: false,
-                errors: [errors.UNKNOWN_ERROR(att + " requires validation test")]
+                errors: [errors.ATTRIBUTE_TEST_REQUIRED(att)]
             };
         },
         id: function id(pre) {
@@ -203,18 +201,16 @@ module.exports = function Validate(errors, _) {
             }
             return {
                 valid: false,
-                errors: [errors.ID_INVALID(pre)]
+                errors: [errors.ATTRIBUTE_INVALID("id")]
             };
         },
-        regex: function(condition) {
+        regex: function(regex) {
             return function(attribute, value) {
-                var errorArray = [];
-                var valid = condition.regex.test(value);
+                var valid = regex.test(value);
                 if (!valid) {
-                    errorArray.push(condition.error(attribute));
                     return {
                         valid: false,
-                        errors: errorArray
+                        errors: [errors.ATTRIBUTE_INVALID(attribute)]
                     };
                 } else {
                     return {
@@ -228,12 +224,11 @@ module.exports = function Validate(errors, _) {
             return function(attribute, value) {
                 var date = moment(value, "YYYY-MM-DDTHH:mm:ss.SSSZ", true);
                 var valid = date.isValid();
-
                 if (valid) {
                     if (date.isBefore(range.min) || date.isAfter(range.max)) {
                         return {
                             valid: false,
-                            errors: [range.error]
+                            errors: [errors.ATTRIBUTE_INVALID(attribute)]
                         };
                     } else {
                         return {
@@ -244,7 +239,7 @@ module.exports = function Validate(errors, _) {
                 } else {
                     return {
                         valid: false,
-                        errors: errors.form.DATE_INVALID(attribute)
+                        errors: [errors.ATTRIBUTE_INVALID(attribute)]
                     };
                 }
             }
@@ -253,6 +248,7 @@ module.exports = function Validate(errors, _) {
 
     // Merge Database Utility Functions for Models
     _.merge(validate, adminValidate);
+    _.merge(validate, userValidate);
 
     return validate;
 };

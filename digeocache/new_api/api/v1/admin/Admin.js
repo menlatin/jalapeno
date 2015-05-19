@@ -28,43 +28,43 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
             type: "text",
             required: true,
             auto: false,
-            test: validate.admin_username
+            test: validate.admin_username()
         }, {
             attribute: "password",
             type: "password",
             required: true,
             auto: false,
-            test: validate.admin_password
+            test: validate.admin_password()
         }, {
             attribute: "email",
             type: "text",
             required: true,
             auto: false,
-            test: validate.admin_email
+            test: validate.admin_email()
         }, {
             attribute: "birthday",
             type: "date",
             required: false,
             auto: false,
-            test: validate.admin_birthday
+            test: validate.admin_birthday()
         }, {
             attribute: "phone",
             type: "text",
             required: false,
             auto: false,
-            test: validate.admin_phone
+            test: validate.admin_phone()
         }, {
             attribute: "firstname",
             type: "text",
             required: false,
             auto: false,
-            test: validate.admin_firstname
+            test: validate.admin_firstname()
         }, {
             attribute: "lastname",
             type: "text",
             required: false,
             auto: false,
-            test: validate.admin_lastname
+            test: validate.admin_lastname()
         }, {
             attribute: "created_on",
             type: "date",
@@ -118,7 +118,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                     var checkUsername = yield db.admin_username_taken(admin_test.data.username);
                     if (checkUsername.success) {
                         if (checkUsername.taken) {
-                            return yield admin.invalidPost(admin_pre, [errors.user.USERNAME_TAKEN("username")]);
+                            return yield admin.invalidPost(admin_pre, [errors.USERNAME_TAKEN("username")]);
                         }
                     } else {
                         return yield admin.invalidPost(admin_pre, checkUsername.errors);
@@ -126,7 +126,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                     var checkEmail = yield db.admin_email_taken(admin_test.data.email);
                     if (checkEmail.success) {
                         if (checkEmail.taken) {
-                            return yield admin.invalidPost(admin_pre, [errors.user.EMAIL_TAKEN("email")]);
+                            return yield admin.invalidPost(admin_pre, [errors.EMAIL_TAKEN("email")]);
                         }
                     } else {
                         return yield admin.invalidPost(admin_pre, checkEmail.errors);
@@ -339,7 +339,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                     }
                 } else {
                     response.success = false;
-                    response.errors = [errors.admin.UNIDENTIFIABLE()];
+                    response.errors = [errors.admin.UNIDENTIFIABLE(params_id)];
                     return response;
                 }
             };

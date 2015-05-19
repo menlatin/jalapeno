@@ -76,7 +76,7 @@ module.exports = function V1() {
     var db = require('./Database.js')('http://localhost:7474');
 
     var utility = new Utility(errors);
-    var validate = new Validate(errors, _);
+    var validate = new Validate(errors);
 
     var adminLogin = new AdminLogin(db, bcrypt, fs, jwt, parse, errors, validate, utility);
     var admin = new Admin(db, bcrypt, parse, errors, validate, jwt, utility);

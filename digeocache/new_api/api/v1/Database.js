@@ -12,21 +12,24 @@ module.exports = function DB(config) {
     var geocacheDB = require('./geocache/GeocacheDB.js')();
 
     var db = {
+        ndb: ndb,
         cypher: function(input) {
-            console.log("----------------------");
-            console.log("EXECUTING CYPHER QUERY");
-            console.log(input);
-            console.log("----------------------");
+            // console.log("----------------------");
+            // console.log("EXECUTING CYPHER QUERY");
+            // console.log(input);
+            // console.log("----------------------");
             var deferred = Q.defer();
             ndb.cypher(input, function(error, results) {
                 if (error) deferred.reject(error);
                 else deferred.resolve(results);
             });
+
             return deferred.promise;
         },
         successOneOrNone: function(results) {
             var response = {};
             var deferred = Q.defer();
+
             if (!results) {
                 response.success = false;
                 response.errors = [errors.DB_UNDEFINED_RESULT()];
@@ -37,12 +40,29 @@ module.exports = function DB(config) {
                 deferred.reject(response);
             } else {
                 response.success = true;
-                if(results.length == 0) {
+                if (results.length == 0) {
                     response.data = results;
-                }
-                else {
+                } else {
                     response.data = results[0];
                 }
+                deferred.resolve(response);
+            }
+            return deferred.promise;
+        },
+        successOneOrMany: function(results) {
+            var response = {};
+            var deferred = Q.defer();
+            if (!results) {
+                response.success = false;
+                response.errors = [errors.DB_UNDEFINED_RESULT()];
+                deferred.reject(response);
+            } else if (results.length == 0) {
+                response.success = false;
+                response.errors = [errors.DB_EXPECTED_RESULT()];
+                deferred.reject(response);
+            } else {
+                response.success = true;
+                response.data = results;
                 deferred.resolve(response);
             }
             return deferred.promise;
@@ -95,9 +115,13 @@ module.exports = function DB(config) {
                 response.errors = [errors.DB_UNDEFINED_RESULT()];
                 deferred.reject(response);
             } else {
-                console.log("RESULTS successDeleteOne =", results);
-                response.success = true;
-                response.affected = results;
+                if (results.length == 0) {
+                    response = results[0];
+                    response.success = true;
+                } else {
+                    response = results[0];
+                    response.success = true;
+                }
                 deferred.resolve(response);
             }
             return deferred.promise;

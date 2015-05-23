@@ -285,7 +285,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                         return yield admin.invalidPost(admin_pre, findAdmin.errors);
                     }
                     // If we got this far, we must have found a match to delete.
-                    var adminDelete = yield db.admin_delete(admin_test.data, existingAdmin.id);
+                    var adminDelete = yield db.admin_delete_by_id(existingAdmin.id);
                     if (adminDelete.success) {
                         return yield admin.success(adminDelete.data);
                     } else {

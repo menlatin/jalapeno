@@ -79,23 +79,25 @@ module.exports = function AdminLogin(db, bcrypt, fs, jwt, parse, errors, validat
                         var adminByEmail = yield db.admin_by_email_for_login(login_test.data.email);
                         if (adminByEmail.success) {
                             if (adminByEmail.data.length == 0) {
-                                return yield adminLogin.invalidPost(login_pre, [errors.login.EMAIL_NOT_FOUND("email")]);
+                                // Email not found (only return generic login failure error for security purposes)
+                                return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE()]);
                             } else {
                                 adminToCompare = adminByEmail.data;
                             }
                         } else {
-                            return yield adminLogin.invalidPost(login_pre, [errors.login.LOGIN_FAILURE()]);
+                            return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE()]);
                         }
                     } else {
                         var adminByUsername = yield db.admin_by_username_for_login(login_test.data.username);
                         if (adminByUsername.success) {
                             if (adminByUsername.data.length == 0) {
-                                return yield adminLogin.invalidPost(login_pre, [errors.login.USERNAME_NOT_FOUND("username")]);
+                                // Username not found (only return generic login failure error for security purposes)
+                                return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE()]);
                             } else {
                                 adminToCompare = adminByUsername.data;
                             }
                         } else {
-                            return yield adminLogin.invalidPost(login_pre, [errors.login.LOGIN_FAILURE()]);
+                            return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE()]);
                         }
                     }
 
@@ -132,10 +134,11 @@ module.exports = function AdminLogin(db, bcrypt, fs, jwt, parse, errors, validat
                             });
                         } else {
                             // Failed to Update Last Login Date When Logging In
-                            return yield adminLogin.invalidPost(login_pre, [errors.login.LOGIN_FAILURE()]);
+                            return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE()]);
                         }
                     } else {
-                        return yield adminLogin.invalidPost(login_pre, [errors.login.PASSWORD_INCORRECT('password')]);
+                        // Password incorrect (only return generic login failure error for security purposes)
+                        return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE()]);
                     }
 
                 } else {

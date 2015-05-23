@@ -64,15 +64,21 @@ module.exports = function Errors() {
                 message: "DB query result was empty"
             }
         },
+        DB_EXPECTED_RESULT: function() {
+            return {
+                code: 2004,
+                message: "DB query response expected one or more results"
+            }
+        },
         DB_EXPECTED_ONE_RESULT: function() {
             return {
-                code: 2003,
-                message: "DB query result expected only one result and found many"
+                code: 2005,
+                message: "DB query response expected only one result and found many"
             }
         },
         DB_UNDEFINED_RESULT: function() {
             return {
-                code: 2004,
+                code: 2006,
                 message: "DB query result was undefined"
             }
         },

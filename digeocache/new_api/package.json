@@ -4,8 +4,8 @@
   "description": "Cryptocurrency Geocaches Game and Marketplace",
   "main": "server.js",
   "scripts": {
-    "preinstall": "echo Hold on to your butts...",
-    "postinstall": "echo Mr. Hammond, the phones are working.",
+    "preinstall": "./scripts/preinstall.sh",
+    "postinstall": "./scripts/postinstall.sh",
     "start": "node --harmony `which gulp`",
     "test": "node --harmony `which gulp` test-once"
   },
@@ -31,17 +31,16 @@
     "q": "1.4.0"
   },
   "devDependencies": {
+    "chai": "2.3.0",
     "co": "4.5.4",
     "co-supertest": "0.0.8",
     "gulp": "3.8.11",
     "gulp-exit": "0.0.2",
     "gulp-mocha-co": "0.4.1-co.3",
     "gulp-nodemon": "2.0.3",
+    "gulp-util": "3.0.4",
     "gulp-watch": "4.2.4",
-    "chai": "2.3.0",
-    "supertest": "0.15.0",
-    "lodash": "3.8.0",
-    "moment": "2.10.3"
+    "supertest": "0.15.0"
   },
   "engines": {
     "node": "v0.12.2"

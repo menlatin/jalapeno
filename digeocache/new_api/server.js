@@ -25,6 +25,7 @@ var https = require('https');
 var fs = require('fs');
 
 var V1 = module.exports = require('./api/v1/V1.js')();
+
 var SSLOptionsV1 = {
     key: fs.readFileSync('api/v1/auth/ssl/digeocache-key.pem', 'utf8'),
     cert: fs.readFileSync('api/v1/auth/ssl/digeocache.crt', 'utf8')

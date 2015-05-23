@@ -1,0 +1,4 @@
+username,firstname,lastname,email,birthday,phone,created_on,updated_on,login_on,hash
+elliott_user,Elliott,Richerson,elliott.richerson@gmail.com,1987-01-03T06:00:00.000Z,7202321897,2015-01-01T00:00:00.000Z,2015-05-20T13:30:05.000Z,2015-05-20T12:45:00.000Z,elliott_user_password1
+aari_user,Aari,Lotfipour,aari13@gmail.com,2015-12-30T00:00:00.000Z,5558675309,2015-12-30T00:00:00.000Z,2015-12-30T00:00:00.000Z,2015-12-30T00:00:00.000Z,aari_user_password1
+charles_user,Charles,Rosas,charles@digeocache.com,2015-12-30T00:00:00.000Z,5558675309,2015-12-30T00:00:00.000Z,2015-12-30T00:00:00.000Z,2015-12-30T00:00:00.000Z,charles_user_password1

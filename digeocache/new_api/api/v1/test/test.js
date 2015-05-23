@@ -44,7 +44,6 @@ var test = {
     db: DB,
     errors: errors,
     bcrypt: bcrypt,
-    _: _,
     Q: Q,
     request: request,
     expect: expect,
@@ -52,13 +51,25 @@ var test = {
     jwt: jwt,
     fs: fs,
     publicKey: publicKey,
-    printErrors: function(response) {
-        if (response.body.errors) {
-            return JSON.stringify(response.body.errors, null, '\t') + "\n";
+    printErrors: function(errors) {
+        if (errors) {
+            return JSON.stringify(errors, null, '\t') + "\n";
         }
     },
-    checkErrors: function(response) {
-        expect(response.body.errors, "Errors in response:\n" + test.printErrors(response)).to.not.exist;
+    checkData: function(data) {
+        test.expect(data).to.be.an('object');
+        test.expect(data.id).to.exist;
+        test.expect(data.username).to.not.equal('');
+        test.expect(data.email).to.not.equal('');
+        test.expect(data.created_on).to.exist;
+        test.expect(data.updated_on).to_exist;
+        test.expect(data.login_on).to.equal('');
+    },
+    checkErrors: function(errors) {
+        console.log("WHAT!!!!SDFSDFDS = ", errors);
+        expect(errors).to.not.exist;
+        console.log("WHAT!!!!");
+        expect(errors, "Errors in response:\n" + test.printErrors(errors)).to.not.exist;
 
     },
     expectErrors: function(response, expected) {
@@ -82,8 +93,9 @@ var test = {
         expect(decoded.exp).to.exist; // expect "expiration" timestamp in token claim
         return data.token;
     },
-    verifyUserToken: function(response) {
-        expect(response.body.data.length).to.equal(1);
+    verifyUserToken: function(data) {
+        console.log("VERIFY TOKEN DATA =", data);
+        expect(data).to.equal(1);
         var data = response.body.data[0];
         expect(data.token).to.exist;
         // verify a token symmetric - synchronous

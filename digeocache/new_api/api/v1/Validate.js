@@ -92,9 +92,6 @@ module.exports = function Validate(errors) {
                 }
                 // The Field is Present, Check for Validity
                 else {
-
-                    console.log("nonAutoScheme.test = ", nonAutoScheme.test);
-
                     if (typeof(nonAutoScheme.test) == "function" && nonAutoScheme.test.length == 2) {
                         var test = nonAutoScheme.test(fieldAttribute, fieldValue ? fieldValue : "");
                         if (test.valid) {

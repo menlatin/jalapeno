@@ -14,7 +14,6 @@ module.exports = function AdminDB() {
                 alias + ".login_on AS login_on";
         },
         admin_login_return: function(alias) {
-        	console.log("THIS SHOULDNT BE CALLED HERE");
             return " id(" + alias + ") AS id, " +
                 alias + ".username AS username, " +
                 alias + ".firstname AS firstname, " +
@@ -26,6 +25,9 @@ module.exports = function AdminDB() {
                 alias + ".updated_on AS updated_on, " +
                 alias + ".login_on AS login_on, " +
                 alias + ".hash AS hash";
+        },
+        admin_delete_return: function(alias) {
+            return " COUNT(a) AS affected, collect(id("+alias+")) AS ids";
         },
         admin_create: function(admin) {
             var query = "CREATE (a:Admin {admin}) " +
@@ -88,22 +90,22 @@ module.exports = function AdminDB() {
                 .then(this.success, this.error);
         },
         admin_delete_by_id: function(id) {
-        	var query = "MATCH (a:Admin) WHERE id(a) = " + id + " OPTIONAL MATCH (a)-[r]-() DELETE a, r";
+        	var query = "MATCH (a:Admin) WHERE id(a) = " + id + " OPTIONAL MATCH (a)-[r]-() DELETE a, r RETURN "+this.admin_delete_return("a");
         	return this.cypher(query)
         		.then(this.successDelete, this.error);
         },
         admin_delete_by_username: function(username) {
-            var query = "MATCH (a:Admin { username: \"" + username + "\" }) OPTIONAL MATCH (a)-[r]-() DELETE a, r";
+            var query = "MATCH (a:Admin { username: \"" + username + "\" }) OPTIONAL MATCH (a)-[r]-() DELETE a, r RETURN "+this.admin_delete_return("a");
             return this.cypher(query)
                 .then(this.successDelete, this.error);
         },
         admin_delete_by_email: function(email) {
-            var query = "MATCH (a:Admin { email: \"" + email + "\" }) OPTIONAL MATCH (a)-[r]-() DELETE a, r";
+            var query = "MATCH (a:Admin { email: \"" + email + "\" }) OPTIONAL MATCH (a)-[r]-() DELETE a, r RETURN "+this.admin_delete_return("a");
             return this.cypher(query)
                 .then(this.successDelete, this.error);
         },
         admins_purge: function() {
-            var query = "MATCH (a:Admin) DELETE a";
+            var query = "MATCH (a:Admin) OPTIONAL MATCH (a)-[r]-() DELETE a, r RETURN "+this.admin_delete_return("a");
             //TODO
         },
         admin_username_taken: function(username) {

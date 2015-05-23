@@ -7,7 +7,42 @@ var gulp = require('gulp'),
     //   "Module did not self-register" error in 'gulp-mocha-co'
     mocha = require('gulp-mocha-co'),
     exit = require('gulp-exit'),
-    watch = require('gulp-watch');
+    watch = require('gulp-watch'),
+    gutil = require('gulp-util'),
+    spawn = require('child_process').spawn;
+
+
+gulp.task('clean', function() {
+    // Do run some gulp tasks here
+    // ...
+
+    // Finally execute your script below - here "ls -lA"
+    var child = spawn("./scripts/clean.sh", [], {
+            cwd: process.cwd()
+        }),
+        stdout = '',
+        stderr = '';
+
+    child.stdout.setEncoding('utf8');
+
+    child.stdout.on('data', function(data) {
+        stdout += data;
+        // gutil.log(data);
+    });
+
+    child.stderr.setEncoding('utf8');
+    child.stderr.on('data', function(data) {
+        stderr += data;
+        gutil.log(gutil.colors.red(data));
+        gutil.beep();
+    });
+
+    child.on('close', function(code) {
+        gutil.log("Done with exit code", code);
+        if (stdout) { gutil.log("OUTPUT: ", stdout); }
+        if (stderr) { gutil.log("ERRORS: ", stderr); }
+    });
+});
 
 gulp.task('nodemon', function() {
     nodemon({

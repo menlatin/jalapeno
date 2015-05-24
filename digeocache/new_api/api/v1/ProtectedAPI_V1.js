@@ -1,4 +1,4 @@
-module.exports = function ProtectedAPI_V1(admin) {
+module.exports = function ProtectedAPI_V1(admin,user) {
 
     var Router = require('koa-router');
 
@@ -21,6 +21,12 @@ module.exports = function ProtectedAPI_V1(admin) {
     ProtectedAPI_V1.del('/admin/:id', admin.del);
 
     // User routes
+    ProtectedAPI_V1.get('/user', user.get);
+    ProtectedAPI_V1.get('/user/:id', user.get);
+    ProtectedAPI_V1.put('/user', user.put);
+    ProtectedAPI_V1.put('/user/:id', user.put);
+    ProtectedAPI_V1.del('/user', user.del);
+    ProtectedAPI_V1.del('/user/:id', user.del);
 
     return ProtectedAPI_V1;
 };

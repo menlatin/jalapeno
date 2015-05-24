@@ -14,7 +14,6 @@ module.exports = function UserDB() {
                 alias + ".login_on AS login_on";
         },
         user_login_return: function(alias) {
-        	console.log("THIS SHOULDNT BE CALLED HERE");
             return " id(" + alias + ") AS id, " +
                 alias + ".username AS username, " +
                 alias + ".firstname AS firstname, " +
@@ -26,6 +25,9 @@ module.exports = function UserDB() {
                 alias + ".updated_on AS updated_on, " +
                 alias + ".login_on AS login_on, " +
                 alias + ".hash AS hash";
+        },
+        user_delete_return: function(alias) {
+            return " COUNT(u) AS affected, collect(id("+alias+")) AS ids";
         },
         user_create: function(user) {
             var query = "CREATE (u:User {user}) " +
@@ -88,22 +90,22 @@ module.exports = function UserDB() {
                 .then(this.success, this.error);
         },
         user_delete_by_id: function(id) {
-        	var query = "MATCH (u:User) WHERE id(u) = " + id + " OPTIONAL MATCH (u)-[r]-() DELETE u, r";
-        	return this.cypher(query)
-        		.then(this.successDelete, this.error);
+            var query = "MATCH (u:User) WHERE id(u) = " + id + " OPTIONAL MATCH (u)-[r]-() DELETE u, r RETURN "+this.user_delete_return("u");
+            return this.cypher(query)
+                .then(this.successDelete, this.error);
         },
         user_delete_by_username: function(username) {
-            var query = "MATCH (u:User { username: \"" + username + "\" }) OPTIONAL MATCH (u)-[r]-() DELETE u, r";
+            var query = "MATCH (u:User { username: \"" + username + "\" }) OPTIONAL MATCH (u)-[r]-() DELETE u, r RETURN "+this.user_delete_return("u");
             return this.cypher(query)
                 .then(this.successDelete, this.error);
         },
         user_delete_by_email: function(email) {
-            var query = "MATCH (u:User { email: \"" + email + "\" }) OPTIONAL MATCH (u)-[r]-() DELETE u, r";
+            var query = "MATCH (u:User { email: \"" + email + "\" }) OPTIONAL MATCH (u)-[r]-() DELETE u, r RETURN "+this.user_delete_return("u");
             return this.cypher(query)
                 .then(this.successDelete, this.error);
         },
         users_purge: function() {
-            var query = "MATCH (u:User) DELETE u";
+            var query = "MATCH (u:User) OPTIONAL MATCH (u)-[r]-() DELETE u, r RETURN "+this.user_delete_return("u");
             //TODO
         },
         user_username_taken: function(username) {

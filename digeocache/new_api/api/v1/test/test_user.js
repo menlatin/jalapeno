@@ -1,211 +1,465 @@
-// // The MIT License (MIT)
+// The MIT License (MIT)
 
-// // Copyright (c) 2015 Elliott Richerson, Carlos Aari Lotfipour
+// Copyright (c) 2015 Elliott Richerson, Carlos Aari Lotfipour
 
-// // Permission is hereby granted, free of charge, to any person obtaining a copy
-// // of this software and associated documentation files (the "Software"), to deal
-// // in the Software without restriction, including without limitation the rights
-// // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// // copies of the Software, and to permit persons to whom the Software is
-// // furnished to do so, subject to the following conditions:
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 
-// // The above copyright notice and this permission notice shall be included in 
-// // all copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software.
 
-// // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// // SOFTWARE.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
-// var test = require('./test.js');
+var test = require('./test.js');
 
-// /* 
-// 	API Endpoint Tests for User
-//  */
-// describe('USER TESTS', function() {
-//     describe('POST /api/v1/auth/user', function() {
-//         var userLogin = {
-//             username: "test_user",
-//             password: "test_user_password1"
-//         };
+var _ = require('lodash');
+var co = require('co');
+var bcrypt = require('co-bcrypt');
+var jwt = require('koa-jwt');
+var fs = require('fs');
 
-//         it('should authenticate with valid username/password', function * () {
-//             var response = yield test.request.post('/api/v1/auth/user').send(userLogin).end();
-//             test.checkErrors(response);
-//             test.verifyUserToken(response);
-//         });
+// Public Key Used for JWT Verification
+var publicKey = fs.readFileSync('api/v1/auth/ssl/demo.rsa.pub');
 
-//         it('should authenticate with valid email/password', function * () {
-//             // Use email in place of username ("@" should be auto-detected and validated as email)
-//             userLogin.username = "test_user@digeocache.com";
-//             var response = yield test.request.post('/api/v1/auth/user').send(userLogin).end();
-//             test.checkErrors(response);
-//             test.verifyUserToken(response);
-//         });
+var testUserData = require('./data_test_user.js');
 
-//         it('should fail authentication with incorrect password', function * () {
-//             userLogin.password = "Hello4321";
-//             var response = yield test.request.post('/api/v1/auth/user').send(userLogin).end();
-//             test.expectErrors(response, [test.errors.login.PASSWORD_INCORRECT('password')]);
-//         });
+var createUser = function * (testUser) {
+    // Deep clone test user reference
+    var user = _.clone(testUser, true);
 
-//         it('should fail authentication with invalid username and password', function * () {
-//             userLogin.username = "invali^U$eNam[";
-//             userLogin.password = "~";
-//             var response = yield test.request.post('/api/v1/auth/user').send(userLogin).end();
-//             test.expectErrors(response, [test.errors.user.USERNAME_INVALID('username'), test.errors.user.PASSWORD_INVALID('password')]);
-//         });
-//     });
+    var salt = yield bcrypt.genSalt(10);
+    var hash = yield bcrypt.hash(user.password, salt);
 
-//     describe('POST /api/v1/user', function() {
+    // Delete password key/value from post object, replace w/hash
+    delete user.password;
+    user.hash = hash;
 
-//         var user = {
-//             username: "test_user",
-//             password: "test_user_password1",
-//             firstname: "Test",
-//             lastname: "User",
-//             email: "test_user@digeocache.com",
-//             birthday: "1969-12-31T06:00:00.000Z",
-//             phone: "5558675309"
-//         };
+    // Add automatic date fields
+    var now = new Date();
+    user.created_on = now;
+    user.updated_on = now;
+    user.login_on = "";
 
-//         it('should create an user object', function * () {
-//             // Initial Request May Fail in Error if Test User Lingering in Database
-//             var response = yield test.request.post('/api/v1/user').send(user).end();
-//             // Delete Any Users in the Database with this Username or Email
-//             var usernameTaken = false;
-//             var emailTaken = false;
+    return test.db.user_create(user);
+}
 
-//             if (response.body.errors) {
-//                 var taken = response.body.errors.some(
-//                     function isTaken(error, index, array) {
-//                         usernameTaken = error.code == test.errors.user.USERNAME_TAKEN().code;
-//                         emailTaken = error.code == test.errors.user.EMAIL_TAKEN().code;
-//                         return (usernameTaken || emailTaken);
-//                     }
-//                 );
+var deleteUser = function * (testUser) {
+    // Deep clone test user reference
+    var user = _.clone(testUser, true);
+    return test.db.user_delete_by_username(user.username);
+};
 
-//                 var dbDeleteCallback = null;
-//                 if (usernameTaken) {
-//                     dbDeleteCallback = test.db.util.user_delete_by_username(user.username);
-//                 } else if (emailTaken) {
-//                     dbDeleteCallback = test.db.util.user_delete_by_email(user.email);
-//                 }
-//                 var results = yield dbDeleteCallback;
+var printErrors = function(errors) {
+    console.log("called printErrors");
+    if (errors) {
+        return JSON.stringify(errors, null, '\t') + "\n";
+    } else {
+        return "no errors found";
+    }
+}
 
-//                 // Try Again After Deleting Zombie Test Admin
-//                 test.expect(!results).to.equal(false);
-//                 response = yield test.request.post('/api/v1/user').send(user).expect(200).end();
-//             }
+var checkUserCreate = function(createResponses) {
+    test.expect(createResponses).to.be.an('array');
+    for (var index in createResponses) {
+        var response = createResponses[index];
+        test.expect(response.success).to.equal(true);
+        checkUserData(response.data);
+    }
+}
 
-//             test.expect(response.body.errors).to.not.exist;
-//             test.expect(response.body.data.length).to.equal(1);
+var checkUserDelete = function(deleteResponses) {
+    test.expect(deleteResponses).to.be.an('array');
+    for (var index in deleteResponses) {
+        var response = deleteResponses[index];
+        test.expect(response.success).to.exist;
+        test.expect(response.success).to.equal(true);
+        test.expect(response.affected).to.exist;
+        test.expect(response.affected).to.be.within(0, 1);
+        test.expect(response.ids).to.exist;
+        test.expect(response.ids).to.be.an('array');
+        test.expect(response.ids).to.have.length(response.affected);
+    }
+}
 
-//             var data = response.body.data[0];
+var checkUserData = function(data) {
+    if (_.isArray(data)) {
+        for (var index in data) {
+            test.expect(data[index].id).to.exist;
+            test.expect(data[index].username).to.not.equal('');
+            test.expect(data[index].email).to.not.equal('');
+            test.expect(data[index].created_on).to.exist;
+            test.expect(data[index].updated_on).to_exist;
+            test.expect(data[index].login_on).to.exist;
+        }
+    } else {
+        test.expect(data.id).to.exist;
+        test.expect(data.username).to.not.equal('');
+        test.expect(data.email).to.not.equal('');
+        test.expect(data.created_on).to.exist;
+        test.expect(data.updated_on).to_exist;
+        test.expect(data.login_on).to.exist;
+    }
+}
 
-//             test.expect(data.id).to.exist;
-//             test.expect(data.username).to.not.equal('');
-//             test.expect(data.email).to.not.equal('');
-//             test.expect(data.created_on).to.exist;
-//             test.expect(data.updated_on).to_exist;
-//             test.expect(data.login_on).to.equal('');
-//         });
+var checkUserDeleteData = function(data) {
+}
 
-//         it('should expect username and email to be unique in DB', function * () {
-//             var dbUsersWithUsernameCallback = test.db.util.user_by_username(user.username);
-//             var dbUsersWithEmailCallback = test.db.util.user_by_email(user.email);
-//             var resultsUsername = yield dbUsersWithUsernameCallback;
-//             var resultsEmail = yield dbUsersWithEmailCallback;
-//             test.expect(resultsUsername.length).to.equal(1);
-//             test.expect(resultsEmail.length).to.equal(1);
-//         });
-//     });
+var checkUserErrors = function(errors) {
+    test.expect(errors, "Errors in response:\n"+(errors ? printErrors(errors) : "")).to.not.exist;
+}
 
-//     describe('GET /api/v1/user', function() {
+var verifyUserToken = function(data) {
+    test.expect(data).to.be.an('object');
+    test.expect(data.token).to.exist;
+    test.expect(data.token).to.not.equal('');
+    // verify a token symmetric - synchronous
+    var decoded = jwt.verify(data.token, publicKey);
+    test.expect(decoded.username).to.exist; // expect "username" in token claim
+    test.expect(decoded.user).to.be.true; // expect "user" in token claim to be true
+    test.expect(decoded.iat).to.exist; // expect "issued-at" timestamp in token claim
+    test.expect(decoded.exp).to.exist; // expect "expiration" timestamp in token claim
+    return data.token;
+}
 
-//         var userLogin = {
-//             username: "test_user",
-//             password: "test_user_password1"
-//         };
+var authUser = function(t) {
+    it(t.endpoint+' => should ' + t.should, function * () {
+        var response = yield test.request.post(t.endpoint).send(t.credentials).expect(t.expect).end();
 
-//         it('should expect valid authorization header', function * () {
-//             var response = yield test.request.get('/api/v1/user').expect(401).end();
-//         });
+        // Positive Test Case Expects No Errors
+        if (t.errors == undefined) {
+            checkUserErrors(response.body.errors);
+            verifyUserToken(response.body.data);
+        }
+        // Negative Test Cases Looking For Specific Errors
+        else {
+            test.expectErrors(response.body.errors, t.errors);
+        }
+    });
+}
 
-//         it('should return user list w/valid authorization header', function * () {
-//             var responseLogin = yield test.request.post('/api/v1/auth/user').send(userLogin).end();
-//             test.checkErrors(responseLogin);
-//             var testToken = test.verifyUserToken(responseLogin);
-//             var authorizationHeader = {
-//                 Authorization: "Bearer " + testToken
-//             };
-//             response = yield test.request.get('/api/v1/user').set(authorizationHeader).end();
-//             test.checkErrors(response);
-//             test.expect(response.status, "Authorization Bearer should be valid.").to.not.equal(401);
-//             test.expect(response.body.data).to.exist;
-//             test.expect(response.body.data).to.be.an('array');
-//             // TODO: Constrain Limits of Response Array?
-//             // test.expect(response.body.data).to.have.length.within(0,1000); 
-//         });
-//     });
+var postUser = function(t) {
+    it(t.endpoint+' => should ' + t.should, function * () {
+        var response = yield test.request.post(t.endpoint).send(t.payload).expect(t.expect).end();
 
-//     describe('GET /api/v1/user/:id', function() {
+        // Positive Test Case Expects No Errors
+        if (t.errors == undefined) {
+            checkUserErrors(response.body.errors);
+            checkUserData(response.body.data);
+        }
+        // Negative Test Cases Looking For Specific Errors
+        else {
+            test.expectErrors(response.body.errors, t.errors);
+        }
+    });
+}
 
-//         var userLogin = {
-//             username: "test_user",
-//             password: "test_user_password1"
-//         };
+var getUser = function(t) {
+    it(t.endpoint+' =>\tshould ' + t.should, function * () {
+        // Check for wildcard :id in endpoint for tests using id in URL
+        var modifiedEndpoint = _.clone(t.endpoint, true);
+        var pathArray = modifiedEndpoint.split('/');
+        if(_.includes(pathArray, ":id")) {
+            // Get the first baseline data item's ID
+            var userToFind = testUserData.get.baseline[0].username;
+            var findUsername = yield test.db.user_by_username(userToFind);
+            test.expect(findUsername.success).to.equal(true);
+            checkUserData(findUsername.data);
+            test.expect(findUsername.data).to.be.an('object');
+            modifiedEndpoint = modifiedEndpoint.replace(":id", findUsername.data.id);
+        }
 
-//         it('should expect valid authorization header', function * () {
-//             var response = yield test.request.get('/api/v1/user/'+userLogin.username).expect(401).end();
-//         });
+        var response = undefined;
+        // Credentials Provided to Access Resource
+        if (t.credentials) {
+            var responseAuth = yield test.request.post("/api/v1/auth/user").send(t.credentials).expect(t.expect).end();
+            checkUserErrors(responseAuth.body.errors);
+            var testToken = verifyUserToken(responseAuth.body.data);
+            var authorizationHeader = {
+                Authorization: "Bearer " + testToken
+            };
+            response = yield test.request.get(modifiedEndpoint).set(authorizationHeader).expect(t.expect).end();
+        } else {
+            response = yield test.request.get(modifiedEndpoint).expect(t.expect).end();
+        }
 
-//         it('should return user object w/valid authorization header', function * () {
-//             var responseLogin = yield test.request.post('/api/v1/auth/user').send(userLogin).end();
-//             test.checkErrors(responseLogin);
-//             var testToken = test.verifyUserToken(responseLogin);
-//             var authorizationHeader = {
-//                 Authorization: "Bearer " + testToken
-//             };
-//             response = yield test.request.get('/api/v1/user/'+userLogin.username).set(authorizationHeader).end();
-//             test.checkErrors(response);
-//             test.expect(response.status, "Authorization Bearer should be valid.").to.not.equal(401);
-//             test.expect(response.body.data).to.exist;
-//             test.expect(response.body.data).to.be.an('array');
-//             test.expect(response.body.data).to.have.length(1);
+        // Positive Test Case Expects No Errors
+        if (t.errors == undefined) {
+            checkUserErrors(response.body.errors);
+            checkUserData(response.body.data);
+        }
+        // Negative Test Cases Looking For Specific Errors
+        else {
+            test.expectErrors(response.body.errors, t.errors);
+        }
+    });
+}
 
+var putUser = function(t) {
+    it(t.endpoint+' => should ' + t.should, function * () {
+        // Check for wildcard :id in endpoint for tests using id in URL
+        var modifiedEndpoint = _.clone(t.endpoint, true);
+        var pathArray = modifiedEndpoint.split('/');
+        if(_.includes(pathArray, ":id")) {
+            // Get the first baseline data item's ID
+            var userToFind = testUserData.put.baseline[0].username;
+            var findUsername = yield test.db.user_by_username(userToFind);
+            test.expect(findUsername.success).to.equal(true);
+            checkUserData(findUsername.data);
+            test.expect(findUsername.data).to.be.an('object');
+            modifiedEndpoint = modifiedEndpoint.replace(":id", findUsername.data.id);
+        }
 
+        var response = undefined;
+        // Credentials Provided to Access Resource
+        if (t.credentials) {
+            var responseAuth = yield test.request.post("/api/v1/auth/user").send(t.credentials).send(t.payload).expect(t.expect).end();
+            checkUserErrors(responseAuth.body.errors);
+            var testToken = verifyUserToken(responseAuth.body.data);
+            var authorizationHeader = {
+                Authorization: "Bearer " + testToken
+            };
+            response = yield test.request.put(modifiedEndpoint).set(authorizationHeader).send(t.payload).expect(t.expect).end();
+        } else {
+            response = yield test.request.put(modifiedEndpoint).expect(t.expect).end();
+        }
 
-//         //     var resultsUsername = yield test.db.util.user_by_username(user.username);
-//         //     test.expect(resultsUsername.length).to.equal(1);
-//         // var existingUser = response.body.data[0];
+        // Positive Test Case Expects No Errors
+        if (t.errors == undefined) {
+            checkUserErrors(response.body.errors);
+            checkUserData(response.body.data);
+        }
+        // Negative Test Cases Looking For Specific Errors
+        else {
+            test.expectErrors(response.body.errors, t.errors);
+        }
+    });
+}
 
-//             // TODO: Constrain Limits of Response Array?
-//             // test.expect(response.body.data).to.have.length.within(0,1000); 
-//         });
+var delUser = function(t) {
+    it(t.endpoint+' => should ' + t.should, function * () {
+        // Check for wildcard :id in endpoint for tests using id in URL
+        var modifiedEndpoint = _.clone(t.endpoint, true);
+        var pathArray = modifiedEndpoint.split('/');
+        if(_.includes(pathArray, ":id")) {
+            // Get the first baseline data item's ID
+            var userToFind = testUserData.del.baseline[0].username;
+            var findUsername = yield test.db.user_by_username(userToFind);
+            test.expect(findUsername.success).to.equal(true);
+            checkUserData(findUsername.data);
+            test.expect(findUsername.data).to.be.an('object');
+            modifiedEndpoint = modifiedEndpoint.replace(":id", findUsername.data.id);
+        }
 
-//     });
+        var response = undefined;
+        // Credentials Provided to Access Resource
+        if (t.credentials) {
+            var responseAuth = yield test.request.post("/api/v1/auth/user").send(t.credentials).expect(t.expect).end();
+            checkUserErrors(responseAuth.body.errors);
+            var testToken = verifyUserToken(responseAuth.body.data);
+            var authorizationHeader = {
+                Authorization: "Bearer " + testToken
+            };
+            response = yield test.request.del(modifiedEndpoint).set(authorizationHeader).send({}).expect(t.expect).end();
+        } else {
+            response = yield test.request.del(modifiedEndpoint).send({}).expect(t.expect).end();
+        }
 
-//     describe('PUT /api/v1/user', function() {
+        // Positive Test Case Expects No Errors
+        if (t.errors == undefined) {
+            checkUserErrors(response.body.errors);
+            checkUserDeleteData(response.body.data);
+        }
+        // Negative Test Cases Looking For Specific Errors
+        else {
+            test.expectErrors(response.body.errors, t.errors);
+        }
+    });
+}
 
-//         var userUpdate = {
-//             phone: "1234567890"
-//         };
+/* 
+	   API Endpoint Tests for User
+*/
+describe('User Authentication Tests => /api/v1/auth/user', function() {
+    before(function(done) {
+        console.log("\t1. baselining db");
+        deleteUserBaseline(testUserData.auth.baseline).
+        then(
+            deleteResponses => {
+                checkUserDelete(deleteResponses);
+                return createUserBaseline(testUserData.auth.baseline);
+            },
+            error => {
+                return createUserBaseline(testUserData.auth.baseline);
+            }
+        ).then(
+            createResponses => {
+                checkUserCreate(createResponses);
+                console.log("\t2. successfully created baseline");
+                done();
+            },
+            error => {
+                checkUserErrors(error);
+                console.log("\t2. * errors creating new baseline");
+                done();
+            }
+        );
+    });
 
-//         var userUpdateInvalid = {
-//             phonez: "5555555555"
-//         };
+    // Authentication "shoulds" Magic
+    _.forEach(testUserData.auth.tests, authUser);
+});
 
-//         it('should expect valid authorization header', function * () {
-//             var response = yield test.request.get('/api/v1/user').expect(401).end();
-//         });
+describe('User POST Tests => /api/v1/user', function() {
+    before(function(done) {
+        console.log("\t1. baselining db");
 
-//         it('should expect value to be modified in DB');
-//         it('should fail for invalid key');
-//         it('should fail for invalid value');
+        // Deep clone baseline so we can delete zombie node
+        // from last positive POST case run
+        var baselinePlusZombie = _.clone(testUserData.post.baseline, true);
+        baselinePlusZombie.push(testUserData.post.tests[0].payload);
 
-//     });
-// });
+        deleteUserBaseline(baselinePlusZombie).
+        then(
+            deleteResponses => {
+                checkUserDelete(deleteResponses);
+                return createUserBaseline(testUserData.post.baseline);
+            },
+            error => {
+                return createUserBaseline(testUserData.post.baseline);
+            }
+        ).then(
+            createResponses => {
+                checkUserCreate(createResponses);
+                console.log("\t2. successfully created baseline");
+                done();
+            },
+            error => {
+                checkUserErrors(error);
+                console.log("\t2. * errors creating new baseline");
+                done();
+            }
+        );
+    });
+
+    // POST "shoulds" Magic
+    _.forEach(testUserData.post.tests, postUser);
+});
+
+describe('User GET Tests => /api/v1/user', function() {
+    before(function(done) {
+        console.log("\t1. baselining db");
+        deleteUserBaseline(testUserData.get.baseline).
+        then(
+            deleteResponses => {
+                checkUserDelete(deleteResponses);
+                return createUserBaseline(testUserData.get.baseline);
+            },
+            error => {
+                return createUserBaseline(testUserData.get.baseline);
+            }
+        ).then(
+            createResponses => {
+                checkUserCreate(createResponses);
+                console.log("\t2. successfully created baseline");
+                done();
+            },
+            error => {
+                checkUserErrors(error);
+                console.log("\t2. * errors creating new baseline");
+                done();
+            }
+        );
+    });
+
+    // GET "shoulds" Magic
+    _.forEach(testUserData.get.tests, getUser);
+});
+
+describe('User PUT Tests => /api/v1/user', function() {
+    before(function(done) {
+        console.log("\t1. baselining db");
+        deleteUserBaseline(testUserData.put.baseline).
+        then(
+            deleteResponses => {
+                checkUserDelete(deleteResponses);
+                return createUserBaseline(testUserData.put.baseline);
+            },
+            error => {
+                return createUserBaseline(testUserData.put.baseline);
+            }
+        ).then(
+            createResponses => {
+                checkUserCreate(createResponses);
+                console.log("\t2. successfully created baseline");
+                done();
+            },
+            error => {
+                checkUserErrors(error);
+                console.log("\t2. * errors creating new baseline");
+                done();
+            }
+        );
+    });
+
+    // PUT "shoulds" Magic
+    _.forEach(testUserData.put.tests, putUser);
+});
+
+describe('User DELETE Tests => /api/v1/user', function() {
+    before(function(done) {
+        console.log("\t1. baselining db");
+        deleteUserBaseline(testUserData.del.baseline).
+        then(
+            deleteResponses => {
+                checkUserDelete(deleteResponses);
+                return createUserBaseline(testUserData.del.baseline);
+            },
+            error => {
+                return createUserBaseline(testUserData.del.baseline);
+            }
+        ).then(
+            createResponses => {
+                checkUserCreate(createResponses);
+                console.log("\t2. successfully created baseline");
+                done();
+            },
+            error => {
+                checkUserErrors(error);
+                console.log("\t2. * errors creating new baseline");
+                done();
+            }
+        );
+    });
+
+    // DELETE "shoulds" Magic
+    _.forEach(testUserData.del.tests, delUser);
+});
+
+var createUserBaseline = co.wrap(function * (baseline) {
+    var creates = [];
+    for (var index in baseline) {
+        var user = baseline[index];
+        var create = yield * createUser(user);
+        creates.push(create);
+    }
+    return yield Promise.all(creates);
+});
+
+var deleteUserBaseline = co.wrap(function * (baseline) {
+    var deletes = [];
+    for (var user in baseline) {
+        var del = yield * deleteUser(baseline[user]);
+        deletes.push(del);
+    }
+    return yield Promise.all(deletes);
+});

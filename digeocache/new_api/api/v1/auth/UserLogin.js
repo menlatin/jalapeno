@@ -76,33 +76,35 @@ module.exports = function UserLogin(db, bcrypt, fs, jwt, parse, errors, validate
                     // See if this username or email exists in the user database
                     var userToCompare = null;
                     if (isEmailAsUsername) {
-                        var userByEmail = yield db.user_by_email_for_login(login_test.data.email);
+                        var userByEmail = yield db.user_by_email_for_login(login_test.data.username);
                         if (userByEmail.success) {
                             if (userByEmail.data.length == 0) {
-                                return yield userLogin.invalidPost(login_pre, [errors.login.EMAIL_NOT_FOUND("email")]);
+                                // Email not found (only return generic login failure error for security purposes)
+                                return yield userLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE()]);
                             } else {
                                 userToCompare = userByEmail.data;
                             }
                         } else {
-                            return yield userLogin.invalidPost(login_pre, [errors.login.LOGIN_FAILURE()]);
+                            return yield userLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE()]);
                         }
                     } else {
                         var userByUsername = yield db.user_by_username_for_login(login_test.data.username);
                         if (userByUsername.success) {
                             if (userByUsername.data.length == 0) {
-                                return yield userLogin.invalidPost(login_pre, [errors.login.USERNAME_NOT_FOUND("username")]);
+                                // Username not found (only return generic login failure error for security purposes)
+                                return yield userLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE("username not found")]);
                             } else {
                                 userToCompare = userByUsername.data;
                             }
                         } else {
-                            return yield userLogin.invalidPost(login_pre, [errors.login.LOGIN_FAILURE()]);
+                            return yield userLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE("invalid field values")]);
                         }
                     }
 
-                    // Admin Exists Once In DB, Compare Passwords
+                    // User Exists Once In DB, Compare Passwords
                     if (yield bcrypt.compare(login_test.data.password, userToCompare.hash)) {
                         // Password Correct!
-                        // Udpate "login_on" Date for Admin
+                        // Udpate "login_on" Date for User
                         var now = new Date();
                         var userLoginTimeUpdate = {
                             login_on: now
@@ -117,9 +119,9 @@ module.exports = function UserLogin(db, bcrypt, fs, jwt, parse, errors, validate
                             var claims = {
                                 iss: "digeocache",
                                 username: userToCompare.username,
-                                admin: false,
+                                user: true,
                                 pri: {
-                                    admin: [],
+                                    user: ["create", "read", "update", "delete"],
                                     user: ["create", "read", "update", "delete"]
                                 }
                             };
@@ -132,10 +134,11 @@ module.exports = function UserLogin(db, bcrypt, fs, jwt, parse, errors, validate
                             });
                         } else {
                             // Failed to Update Last Login Date When Logging In
-                            return yield userLogin.invalidPost(login_pre, [errors.login.LOGIN_FAILURE()]);
+                            return yield userLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE("failed to update login_on")]);
                         }
                     } else {
-                        return yield userLogin.invalidPost(login_pre, [errors.login.PASSWORD_INCORRECT('password')]);
+                        // Password incorrect (only return generic login failure error for security purposes)
+                        return yield userLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE("password incorrect")]);
                     }
 
                 } else {
@@ -150,21 +153,23 @@ module.exports = function UserLogin(db, bcrypt, fs, jwt, parse, errors, validate
             return function * (next) {
                 // Database Connectivity Issue
                 if (err.code == "ECONNREFUSED") {
-                    return yield userLogin.invalidPost(pre, [errors.DB_ERROR("database connection issue")]);
+                    return yield userLogin.invalidPost(pre, [errors.NEO4J_CONNECTION_ISSUE()]);
                 }
                 // Malformed Cypher Query
                 else if (err.neo4j) {
                     if (err.neo4j.code && err.neo4j.code == "Neo.ClientError.Statement.InvalidSyntax") {
-                        return yield userLogin.invalidPost(pre, [errors.DB_ERROR("malformed query")]);
+                        return yield userLogin.invalidPost(pre, [errors.NEO4J_MALFORMED_QUERY()]);
+                    } else if (err.neo4j.code && err.neo4j.code == "Neo.ClientError.Schema.ConstraintViolation") {
+                        return yield userLogin.invalidPost(pre, [errors.NEO4J_CONSTRAINT_VIOLATION()]);
                     } else {
-                        return yield userLogin.invalidPost(pre, [errors.DB_ERROR("neo4j error")]);
+                        return yield userLogin.invalidPost(pre, [errors.NEO4J_ERROR()]);
                     }
                 } else {
                     // Unknown Error
                     if (err.success !== undefined) {
                         return yield userLogin.invalidPost(pre, err.errors);
                     } else {
-                        return yield userLogin.invalidPost(pre, [errors.UNKNOWN_ERROR("logging in user --- " + err)]);
+                        return yield userLogin.invalidPost(pre, [errors.UNKNOWN_ERROR("userLogin --- " + err)]);
                     }
                 }
             };

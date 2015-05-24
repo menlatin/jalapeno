@@ -31,7 +31,7 @@ var fs = require('fs');
 // Public Key Used for JWT Verification
 var publicKey = fs.readFileSync('api/v1/auth/ssl/demo.rsa.pub');
 
-var testData = require('./data_test_admin.js');
+var testAdminData = require('./data_test_admin.js');
 
 var createAdmin = function * (testAdmin) {
     // Deep clone test admin reference
@@ -60,6 +60,7 @@ var deleteAdmin = function * (testAdmin) {
 };
 
 var printErrors = function(errors) {
+    console.log("called printErrors");
     if (errors) {
         return JSON.stringify(errors, null, '\t') + "\n";
     } else {
@@ -114,7 +115,7 @@ var checkAdminDeleteData = function(data) {
 }
 
 var checkAdminErrors = function(errors) {
-    test.expect(errors, "Errors in response:\n" + printErrors(errors)).to.not.exist;
+    test.expect(errors, "Errors in response:\n"+(errors ? printErrors(errors) : "")).to.not.exist;
 }
 
 var verifyAdminToken = function(data) {
@@ -130,27 +131,8 @@ var verifyAdminToken = function(data) {
     return data.token;
 }
 
-var createBaseline = co.wrap(function * (baseline) {
-    var creates = [];
-    for (var index in baseline) {
-        var admin = baseline[index];
-        var create = yield * createAdmin(admin);
-        creates.push(create);
-    }
-    return yield Promise.all(creates);
-});
-
-var deleteBaseline = co.wrap(function * (baseline) {
-    var deletes = [];
-    for (var admin in baseline) {
-        var del = yield * deleteAdmin(baseline[admin]);
-        deletes.push(del);
-    }
-    return yield Promise.all(deletes);
-});
-
 var authAdmin = function(t) {
-    it('should ' + t.should, function * () {
+    it(t.endpoint+' => should ' + t.should, function * () {
         var response = yield test.request.post(t.endpoint).send(t.credentials).expect(t.expect).end();
 
         // Positive Test Case Expects No Errors
@@ -166,7 +148,7 @@ var authAdmin = function(t) {
 }
 
 var postAdmin = function(t) {
-    it('should ' + t.should, function * () {
+    it(t.endpoint+' => should ' + t.should, function * () {
         var response = yield test.request.post(t.endpoint).send(t.payload).expect(t.expect).end();
 
         // Positive Test Case Expects No Errors
@@ -182,13 +164,13 @@ var postAdmin = function(t) {
 }
 
 var getAdmin = function(t) {
-    it('should ' + t.should, function * () {
+    it(t.endpoint+' =>\tshould ' + t.should, function * () {
         // Check for wildcard :id in endpoint for tests using id in URL
         var modifiedEndpoint = _.clone(t.endpoint, true);
         var pathArray = modifiedEndpoint.split('/');
         if(_.includes(pathArray, ":id")) {
             // Get the first baseline data item's ID
-            var userToFind = testData.get.baseline[0].username;
+            var userToFind = testAdminData.get.baseline[0].username;
             var findUsername = yield test.db.admin_by_username(userToFind);
             test.expect(findUsername.success).to.equal(true);
             checkAdminData(findUsername.data);
@@ -223,13 +205,13 @@ var getAdmin = function(t) {
 }
 
 var putAdmin = function(t) {
-    it('should ' + t.should, function * () {
+    it(t.endpoint+' => should ' + t.should, function * () {
         // Check for wildcard :id in endpoint for tests using id in URL
         var modifiedEndpoint = _.clone(t.endpoint, true);
         var pathArray = modifiedEndpoint.split('/');
         if(_.includes(pathArray, ":id")) {
             // Get the first baseline data item's ID
-            var userToFind = testData.put.baseline[0].username;
+            var userToFind = testAdminData.put.baseline[0].username;
             var findUsername = yield test.db.admin_by_username(userToFind);
             test.expect(findUsername.success).to.equal(true);
             checkAdminData(findUsername.data);
@@ -264,13 +246,13 @@ var putAdmin = function(t) {
 }
 
 var delAdmin = function(t) {
-    it('should ' + t.should, function * () {
+    it(t.endpoint+' => should ' + t.should, function * () {
         // Check for wildcard :id in endpoint for tests using id in URL
         var modifiedEndpoint = _.clone(t.endpoint, true);
         var pathArray = modifiedEndpoint.split('/');
         if(_.includes(pathArray, ":id")) {
             // Get the first baseline data item's ID
-            var userToFind = testData.del.baseline[0].username;
+            var userToFind = testAdminData.del.baseline[0].username;
             var findUsername = yield test.db.admin_by_username(userToFind);
             test.expect(findUsername.success).to.equal(true);
             checkAdminData(findUsername.data);
@@ -310,14 +292,14 @@ var delAdmin = function(t) {
 describe('Admin Authentication Tests => /api/v1/auth/admin', function() {
     before(function(done) {
         console.log("\t1. baselining db");
-        deleteBaseline(testData.auth.baseline).
+        deleteAdminBaseline(testAdminData.auth.baseline).
         then(
             deleteResponses => {
                 checkAdminDelete(deleteResponses);
-                return createBaseline(testData.auth.baseline);
+                return createAdminBaseline(testAdminData.auth.baseline);
             },
             error => {
-                return createBaseline(testData.auth.baseline);
+                return createAdminBaseline(testAdminData.auth.baseline);
             }
         ).then(
             createResponses => {
@@ -334,7 +316,7 @@ describe('Admin Authentication Tests => /api/v1/auth/admin', function() {
     });
 
     // Authentication "shoulds" Magic
-    _.forEach(testData.auth.tests, authAdmin);
+    _.forEach(testAdminData.auth.tests, authAdmin);
 });
 
 describe('Admin POST Tests => /api/v1/admin', function() {
@@ -343,17 +325,17 @@ describe('Admin POST Tests => /api/v1/admin', function() {
 
         // Deep clone baseline so we can delete zombie node
         // from last positive POST case run
-        var baselinePlusZombie = _.clone(testData.post.baseline, true);
-        baselinePlusZombie.push(testData.post.tests[0].payload);
+        var baselinePlusZombie = _.clone(testAdminData.post.baseline, true);
+        baselinePlusZombie.push(testAdminData.post.tests[0].payload);
 
-        deleteBaseline(baselinePlusZombie).
+        deleteAdminBaseline(baselinePlusZombie).
         then(
             deleteResponses => {
                 checkAdminDelete(deleteResponses);
-                return createBaseline(testData.post.baseline);
+                return createAdminBaseline(testAdminData.post.baseline);
             },
             error => {
-                return createBaseline(testData.post.baseline);
+                return createAdminBaseline(testAdminData.post.baseline);
             }
         ).then(
             createResponses => {
@@ -370,20 +352,20 @@ describe('Admin POST Tests => /api/v1/admin', function() {
     });
 
     // POST "shoulds" Magic
-    _.forEach(testData.post.tests, postAdmin);
+    _.forEach(testAdminData.post.tests, postAdmin);
 });
 
 describe('Admin GET Tests => /api/v1/admin', function() {
     before(function(done) {
         console.log("\t1. baselining db");
-        deleteBaseline(testData.get.baseline).
+        deleteAdminBaseline(testAdminData.get.baseline).
         then(
             deleteResponses => {
                 checkAdminDelete(deleteResponses);
-                return createBaseline(testData.get.baseline);
+                return createAdminBaseline(testAdminData.get.baseline);
             },
             error => {
-                return createBaseline(testData.get.baseline);
+                return createAdminBaseline(testAdminData.get.baseline);
             }
         ).then(
             createResponses => {
@@ -400,20 +382,20 @@ describe('Admin GET Tests => /api/v1/admin', function() {
     });
 
     // GET "shoulds" Magic
-    _.forEach(testData.get.tests, getAdmin);
+    _.forEach(testAdminData.get.tests, getAdmin);
 });
 
 describe('Admin PUT Tests => /api/v1/admin', function() {
     before(function(done) {
         console.log("\t1. baselining db");
-        deleteBaseline(testData.put.baseline).
+        deleteAdminBaseline(testAdminData.put.baseline).
         then(
             deleteResponses => {
                 checkAdminDelete(deleteResponses);
-                return createBaseline(testData.put.baseline);
+                return createAdminBaseline(testAdminData.put.baseline);
             },
             error => {
-                return createBaseline(testData.put.baseline);
+                return createAdminBaseline(testAdminData.put.baseline);
             }
         ).then(
             createResponses => {
@@ -430,20 +412,20 @@ describe('Admin PUT Tests => /api/v1/admin', function() {
     });
 
     // PUT "shoulds" Magic
-    _.forEach(testData.put.tests, putAdmin);
+    _.forEach(testAdminData.put.tests, putAdmin);
 });
 
 describe('Admin DELETE Tests => /api/v1/admin', function() {
     before(function(done) {
         console.log("\t1. baselining db");
-        deleteBaseline(testData.del.baseline).
+        deleteAdminBaseline(testAdminData.del.baseline).
         then(
             deleteResponses => {
                 checkAdminDelete(deleteResponses);
-                return createBaseline(testData.del.baseline);
+                return createAdminBaseline(testAdminData.del.baseline);
             },
             error => {
-                return createBaseline(testData.del.baseline);
+                return createAdminBaseline(testAdminData.del.baseline);
             }
         ).then(
             createResponses => {
@@ -460,5 +442,24 @@ describe('Admin DELETE Tests => /api/v1/admin', function() {
     });
 
     // DELETE "shoulds" Magic
-    _.forEach(testData.del.tests, delAdmin);
+    _.forEach(testAdminData.del.tests, delAdmin);
+});
+
+var createAdminBaseline = co.wrap(function * (baseline) {
+    var creates = [];
+    for (var index in baseline) {
+        var admin = baseline[index];
+        var create = yield * createAdmin(admin);
+        creates.push(create);
+    }
+    return yield Promise.all(creates);
+});
+
+var deleteAdminBaseline = co.wrap(function * (baseline) {
+    var deletes = [];
+    for (var admin in baseline) {
+        var del = yield * deleteAdmin(baseline[admin]);
+        deletes.push(del);
+    }
+    return yield Promise.all(deletes);
 });

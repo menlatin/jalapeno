@@ -1,15 +1,15 @@
 var Errors = require('../Errors.js');
 var errors = new Errors();
 
-var data = {};
-data.auth = {};
-data.post = {};
-data.get = {};
-data.put = {};
-data.del = {};
+var adminData = {};
+adminData.auth = {};
+adminData.post = {};
+adminData.get = {};
+adminData.put = {};
+adminData.del = {};
 
-data.auth.baseline = [];
-data.auth.baseline[0] = {
+adminData.auth.baseline = [];
+adminData.auth.baseline[0] = {
     username: "test_auth_good_admin1",
     password: "test_auth_good_admin_password1",
     firstname: "TestAuth",
@@ -19,8 +19,8 @@ data.auth.baseline[0] = {
     phone: "5558675309"
 };
 
-data.auth.tests = [];
-data.auth.tests[0] = {
+adminData.auth.tests = [];
+adminData.auth.tests[0] = {
     should: "authenticate with existing username/password",
     endpoint: "/api/v1/auth/admin",
     credentials: {
@@ -31,7 +31,7 @@ data.auth.tests[0] = {
     errors: undefined
 };
 
-data.auth.tests[1] = {
+adminData.auth.tests[1] = {
     should: "authenticate with existing email/password",
     endpoint: "/api/v1/auth/admin",
     credentials: {
@@ -42,7 +42,7 @@ data.auth.tests[1] = {
     errors: undefined
 };
 
-data.auth.tests[2] = {
+adminData.auth.tests[2] = {
     should: "fail authentication with non-existent username/password",
     endpoint: "/api/v1/auth/admin",
     credentials: {
@@ -53,7 +53,7 @@ data.auth.tests[2] = {
     errors: [errors.LOGIN_FAILURE()]
 };
 
-data.auth.tests[3] = {
+adminData.auth.tests[3] = {
     should: "fail authentication with non-existent email/password",
     endpoint: "/api/v1/auth/admin",
     credentials: {
@@ -64,7 +64,7 @@ data.auth.tests[3] = {
     errors: [errors.LOGIN_FAILURE()]
 };
 
-data.auth.tests[4] = {
+adminData.auth.tests[4] = {
     should: "fail authentication with existing username and incorrect password",
     endpoint: "/api/v1/auth/admin",
     credentials: {
@@ -75,7 +75,7 @@ data.auth.tests[4] = {
     errors: [errors.LOGIN_FAILURE()]
 };
 
-data.auth.tests[5] = {
+adminData.auth.tests[5] = {
     should: "fail authentication with existing email and incorrect password",
     endpoint: "/api/v1/auth/admin",
     credentials: {
@@ -86,7 +86,7 @@ data.auth.tests[5] = {
     errors: [errors.LOGIN_FAILURE()]
 };
 
-data.auth.tests[6] = {
+adminData.auth.tests[6] = {
     should: "fail authentication with invalid username and password",
     endpoint: "/api/v1/auth/admin",
     credentials: {
@@ -97,8 +97,8 @@ data.auth.tests[6] = {
     errors: [errors.ATTRIBUTE_INVALID()]
 }
 
-data.post.baseline = [];
-data.post.baseline[0] = {
+adminData.post.baseline = [];
+adminData.post.baseline[0] = {
     username: "test_post_existing_admin1",
     password: "test_post_existing_admin_password1",
     firstname: "TestPost",
@@ -108,8 +108,8 @@ data.post.baseline[0] = {
     phone: "5558675309"
 };
 
-data.post.tests = [];
-data.post.tests[0] = {
+adminData.post.tests = [];
+adminData.post.tests[0] = {
     should: "create valid and unique admin object",
     endpoint: "/api/v1/admin",
     payload: {
@@ -124,7 +124,7 @@ data.post.tests[0] = {
     expect: 200,
     errors: undefined
 };
-data.post.tests[1] = {
+adminData.post.tests[1] = {
     should: "fail to create valid but non-unique admin object",
     endpoint: "/api/v1/admin",
     payload: {
@@ -139,7 +139,7 @@ data.post.tests[1] = {
     expect: 200,
     errors: [errors.USERNAME_TAKEN(), errors.EMAIL_TAKEN()]
 };
-data.post.tests[2] = {
+adminData.post.tests[2] = {
     should: "fail to create invalid admin object",
     endpoint: "/api/v1/admin",
     payload: {
@@ -156,8 +156,8 @@ data.post.tests[2] = {
     errors: [errors.ATTRIBUTE_INVALID()]
 };
 
-data.get.baseline = [];
-data.get.baseline[0] = {
+adminData.get.baseline = [];
+adminData.get.baseline[0] = {
     username: "test_get_admin1",
     password: "test_get_admin_password1",
     firstname: "TestGet",
@@ -166,7 +166,7 @@ data.get.baseline[0] = {
     birthday: "1969-12-31T06:00:00.000Z",
     phone: "5558675309"
 };
-data.get.baseline[1] = {
+adminData.get.baseline[1] = {
     username: "test_get_admin2",
     password: "test_get_admin_password2",
     firstname: "TestGet",
@@ -175,7 +175,7 @@ data.get.baseline[1] = {
     birthday: "1969-12-31T06:00:00.000Z",
     phone: "5558675309"
 };
-data.get.baseline[2] = {
+adminData.get.baseline[2] = {
     username: "test_get_admin3",
     password: "test_get_admin_password3",
     firstname: "TestGet",
@@ -185,15 +185,15 @@ data.get.baseline[2] = {
     phone: "5558675309"
 };
 
-data.get.tests = [];
-data.get.tests[0] = {
+adminData.get.tests = [];
+adminData.get.tests[0] = {
     should: "fail without valid authorization header",
     endpoint: "/api/v1/admin",
     credentials: undefined,
     expect: 401,
     errors: [errors.UNAUTHORIZED()]
 };
-data.get.tests[1] = {
+adminData.get.tests[1] = {
     should: "return admin list with valid authorization header",
     endpoint: "/api/v1/admin",
     credentials: {
@@ -203,7 +203,7 @@ data.get.tests[1] = {
     expect: 200,
     errors: undefined
 };
-data.get.tests[2] = {
+adminData.get.tests[2] = {
     should: "return admin identified by username with valid authorization header",
     endpoint: "/api/v1/admin/test_get_admin1",
     credentials: {
@@ -213,7 +213,7 @@ data.get.tests[2] = {
     expect: 200,
     errors: undefined
 };
-data.get.tests[3] = {
+adminData.get.tests[3] = {
     should: "return admin identified by email with valid authorization header",
     endpoint: "/api/v1/admin/test_get_admin1@gmail.com",
     credentials: {
@@ -223,7 +223,7 @@ data.get.tests[3] = {
     expect: 200,
     errors: undefined
 };
-data.get.tests[4] = {
+adminData.get.tests[4] = {
     should: "return admin identified by id with valid authorization header",
     endpoint: "/api/v1/admin/:id",
     credentials: {
@@ -233,7 +233,7 @@ data.get.tests[4] = {
     expect: 200,
     errors: undefined
 };
-data.get.tests[5] = {
+adminData.get.tests[5] = {
     should: "fail to return admin identified improperly with valid authorization header",
     endpoint: "/api/v1/admin/?x42z",
     credentials: {
@@ -244,8 +244,8 @@ data.get.tests[5] = {
     errors: [errors.UNIDENTIFIABLE()]
 };
 
-data.put.baseline = [];
-data.put.baseline[0] = {
+adminData.put.baseline = [];
+adminData.put.baseline[0] = {
     username: "test_put_admin1",
     password: "test_put_admin_password1",
     firstname: "TestPut",
@@ -254,8 +254,8 @@ data.put.baseline[0] = {
     birthday: "1969-12-31T06:00:00.000Z",
     phone: "5558675309"
 };
-data.put.tests = [];
-data.put.tests[0] = {
+adminData.put.tests = [];
+adminData.put.tests[0] = {
     should: "fail without valid authorization header",
     endpoint: "/api/v1/admin/test_put_admin1",
     credentials: undefined,
@@ -265,7 +265,7 @@ data.put.tests[0] = {
     expect: 401,
     errors: [errors.UNAUTHORIZED()]
 };
-data.put.tests[1] = {
+adminData.put.tests[1] = {
     should: "update allowable admin properties using username with valid authorization header",
     endpoint: "/api/v1/admin/test_put_admin1",
     credentials: {
@@ -279,7 +279,7 @@ data.put.tests[1] = {
     expect: 200,
     errors: undefined
 };
-data.put.tests[2] = {
+adminData.put.tests[2] = {
     should: "update allowable admin properties using email with valid authorization header",
     endpoint: "/api/v1/admin/test_put_admin1@gmail.com",
     credentials: {
@@ -293,7 +293,7 @@ data.put.tests[2] = {
     expect: 200,
     errors: undefined
 };
-data.put.tests[3] = {
+adminData.put.tests[3] = {
     should: "update allowable admin properties using id with valid authorization header",
     endpoint: "/api/v1/admin/:id",
     credentials: {
@@ -307,7 +307,7 @@ data.put.tests[3] = {
     expect: 200,
     errors: undefined
 };
-data.put.tests[4] = {
+adminData.put.tests[4] = {
     should: "fail to update allowable admin properties if identified improperly with valid authorization header",
     endpoint: "/api/v1/admin/?x42z",
     credentials: {
@@ -321,7 +321,7 @@ data.put.tests[4] = {
     expect: 200,
     errors: [errors.UNIDENTIFIABLE()]
 };
-data.put.tests[5] = {
+adminData.put.tests[5] = {
     should: "fail to update fields with invalid values",
     endpoint: "/api/v1/admin/test_put_admin1",
     credentials: {
@@ -339,8 +339,8 @@ data.put.tests[5] = {
     errors: [errors.ATTRIBUTE_INVALID()]
 };
 
-data.del.baseline = [];
-data.del.baseline[0] = {
+adminData.del.baseline = [];
+adminData.del.baseline[0] = {
     username: "test_del_admin1",
     password: "test_del_admin_password1",
     firstname: "TestDel",
@@ -349,15 +349,15 @@ data.del.baseline[0] = {
     birthday: "1969-12-31T06:00:00.000Z",
     phone: "5558675309"
 };
-data.del.tests = [];
-data.del.tests[0] = {
+adminData.del.tests = [];
+adminData.del.tests[0] = {
     should: "fail without valid authorization header",
     endpoint: "/api/v1/admin/test_del_admin1",
     credentials: undefined,
     expect: 401,
     errors: [errors.UNAUTHORIZED()]
 };
-data.del.tests[1] = {
+adminData.del.tests[1] = {
     should: "fail when identified improperly with valid authorization header",
     endpoint: "/api/v1/admin/$43",
     credentials: {
@@ -367,7 +367,7 @@ data.del.tests[1] = {
     expect: 200,
     errors: [errors.UNIDENTIFIABLE()]
 };
-data.del.tests[2] = {
+adminData.del.tests[2] = {
     should: "delete admin identified by username with valid authorization header",
     endpoint: "/api/v1/admin/test_del_admin1",
     credentials: {
@@ -378,4 +378,4 @@ data.del.tests[2] = {
     errors: undefined
 };
 
-module.exports = data;
+module.exports = adminData;

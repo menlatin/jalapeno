@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility) {
+module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility, _) {
 
     var user = {
         schema: [{
@@ -115,10 +115,13 @@ module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility
                 var user_test = validate.schema(user.schema, user_pre);
                 if (user_test.valid) {
                     // Check if username / email already in use
+                    var takenErrors = [];
+                    var isTaken = false;
                     var checkUsername = yield db.user_username_taken(user_test.data.username);
                     if (checkUsername.success) {
                         if (checkUsername.taken) {
-                            return yield user.invalidPost(user_pre, [errors.USERNAME_TAKEN("username")]);
+                            isTaken = true;
+                            takenErrors.push(errors.USERNAME_TAKEN("username"));
                         }
                     } else {
                         return yield user.invalidPost(user_pre, checkUsername.errors);
@@ -126,10 +129,15 @@ module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility
                     var checkEmail = yield db.user_email_taken(user_test.data.email);
                     if (checkEmail.success) {
                         if (checkEmail.taken) {
-                            return yield user.invalidPost(user_pre, [errors.EMAIL_TAKEN("email")]);
+                            isTaken = true;
+                            takenErrors.push(errors.EMAIL_TAKEN("email"));
                         }
                     } else {
                         return yield user.invalidPost(user_pre, checkEmail.errors);
+                    }
+
+                    if(isTaken) {
+                        return yield user.invalidPost(user_pre, takenErrors);
                     }
 
                     // Generate salt/hash using bcrypt
@@ -168,7 +176,7 @@ module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility
                 // TODO: Be sure this is being requested by authenticated user w/proper privileges
 
                 // No parameter provided in URL
-                if (this.params.id == undefined && this.params.id == null) {
+                if ((this.params.id == undefined || this.params.id == null) && _.isEmpty(this.query)) {
                     // Return all users      
                     var allUsers = yield db.users_all();
                     if (allUsers.success) {
@@ -201,7 +209,7 @@ module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility
                 var user_pre = yield parse(this);
 
                 // No parameter provided in URL
-                if (this.params.id == undefined && this.params.id == null) {
+                if ((this.params.id == undefined && this.params.id == null) && _.isEmpty(this.query)) {
                     // Perhaps request is for a batch update
                     // batch_test = validate.schemaForBatchUpdate(user.schema, user_pre);
                     // if (batch_test.valid) {
@@ -285,7 +293,7 @@ module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility
                         return yield user.invalidPost(user_pre, findUser.errors);
                     }
                     // If we got this far, we must have found a match to delete.
-                    var userDelete = yield db.user_delete(user_test.data, existingUser.id);
+                    var userDelete = yield db.user_delete_by_id(existingUser.id);
                     if (userDelete.success) {
                         return yield user.success(userDelete.data);
                     } else {
@@ -339,32 +347,14 @@ module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility
                     }
                 } else {
                     response.success = false;
-                    response.errors = [errors.user.UNIDENTIFIABLE(params_id)];
+                    response.errors = [errors.UNIDENTIFIABLE(params_id)];
                     return response;
                 }
             };
         },
         catchErrors: function(err, pre) {
             return function * (next) {
-                // Database Connectivity Issue
-                if (err.code == "ECONNREFUSED") {
-                    return yield user.invalidPost(pre, [errors.DB_ERROR("database connection issue")]);
-                }
-                // Malformed Cypher Query
-                else if (err.neo4j) {
-                    if (err.neo4j.code && err.neo4j.code == "Neo.ClientError.Statement.InvalidSyntax") {
-                        return yield user.invalidPost(pre, [errors.DB_ERROR("malformed query")]);
-                    } else {
-                        return yield user.invalidPost(pre, [errors.DB_ERROR("neo4j error")]);
-                    }
-                } else {
-                    // Unknown Error
-                    if (err.success !== undefined) {
-                        return yield user.invalidPost(pre, err.errors);
-                    } else {
-                        return yield user.invalidPost(pre, [errors.UNKNOWN_ERROR("user --- " + err)]);
-                    }
-                }
+                return yield user.invalidPost(pre, [errors.UNKNOWN_ERROR("user --- " + err)]);
             };
         }
     }

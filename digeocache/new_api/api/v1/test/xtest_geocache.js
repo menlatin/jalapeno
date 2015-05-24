@@ -31,7 +31,7 @@ var fs = require('fs');
 // Public Key Used for JWT Verification
 var publicKey = fs.readFileSync('api/v1/auth/ssl/demo.rsa.pub');
 
-var testUserData = require('./data_test_user.js');
+var testGeocacheData = require('./data_test_geocache.js');
 
 var printErrors = function(errors) {
     if (errors) {
@@ -41,77 +41,88 @@ var printErrors = function(errors) {
     }
 }
 
-var checkUserCreate = function(createResponses) {
+var checkGeocacheCreate = function(createResponses) {
     test.expect(createResponses).to.be.an('array');
     for (var index in createResponses) {
         var response = createResponses[index];
         test.expect(response.success).to.equal(true);
-        checkUserData(response.data);
+        checkGeocacheData(response.data);
     }
 }
 
-var checkUserDelete = function(deleteResponses) {
+var checkGeocacheDelete = function(deleteResponses) {
     test.expect(deleteResponses).to.be.an('array');
     for (var index in deleteResponses) {
         var response = deleteResponses[index];
         test.expect(response.success).to.exist;
         test.expect(response.success).to.equal(true);
         test.expect(response.affected).to.exist;
-        test.expect(response.affected).to.be.within(0, 1);
+        // test.expect(response.affected).to.be.within(0, 1);
         test.expect(response.ids).to.exist;
         test.expect(response.ids).to.be.an('array');
         test.expect(response.ids).to.have.length(response.affected);
     }
 }
 
-var checkUserData = function(data) {
+var checkGeocacheData = function(data) {
     if (_.isArray(data)) {
         for (var index in data) {
             test.expect(data[index].id).to.exist;
-            test.expect(data[index].username).to.not.equal('');
-            test.expect(data[index].email).to.not.equal('');
-            test.expect(data[index].created_on).to.exist;
-            test.expect(data[index].updated_on).to_exist;
-            test.expect(data[index].login_on).to.exist;
+            test.expect(data[index].title).to.not.equal('');
+            test.expect(data[index].message).to.not.equal('');
+            test.expect(data[index].lat).to.exist;
+            test.expect(data[index].lng).to_exist;
+            test.expect(data[index].currency).to_exist;
+            test.expect(data[index].amount).to_exist;
+            test.expect(data[index].is_physical).to_exist;
+            test.expect(data[index].delay).to_exist;
+            test.expect(data[index].drop_count).to.exist;
+            test.expect(data.created_on).to.exist;
+            test.expect(data.updated_on).to_exist;
         }
     } else {
-        test.expect(data.id).to.exist;
-        test.expect(data.username).to.not.equal('');
-        test.expect(data.email).to.not.equal('');
+        test.expect(data[index].id).to.exist;
+        test.expect(data[index].title).to.not.equal('');
+        test.expect(data[index].message).to.not.equal('');
+        test.expect(data[index].lat).to.exist;
+        test.expect(data[index].lng).to_exist;
+        test.expect(data[index].currency).to_exist;
+        test.expect(data[index].amount).to_exist;
+        test.expect(data[index].is_physical).to_exist;
+        test.expect(data[index].delay).to_exist;
+        test.expect(data[index].drop_count).to.exist;
         test.expect(data.created_on).to.exist;
         test.expect(data.updated_on).to_exist;
-        test.expect(data.login_on).to.exist;
     }
 }
 
-var checkUserDeleteData = function(data) {
+var checkGeocacheDeleteData = function(data) {}
+
+var checkGeocacheErrors = function(errors) {
+    test.expect(errors, "Errors in response:\n" + (errors ? printErrors(errors) : "")).to.not.exist;
 }
 
-var checkUserErrors = function(errors) {
-    test.expect(errors, "Errors in response:\n"+(errors ? printErrors(errors) : "")).to.not.exist;
-}
-
-var verifyUserToken = function(data) {
+var verifyGeocacheToken = function(data) {
     test.expect(data).to.be.an('object');
     test.expect(data.token).to.exist;
     test.expect(data.token).to.not.equal('');
     // verify a token symmetric - synchronous
     var decoded = jwt.verify(data.token, publicKey);
-    test.expect(decoded.username).to.exist; // expect "username" in token claim
-    test.expect(decoded.user).to.be.true; // expect "user" in token claim to be true
+    test.expect(decoded.geocachename).to.exist; // expect "geocachename" in token claim
+    test.expect(decoded.geocache).to.be.true; // expect "geocache" in token claim to be true
     test.expect(decoded.iat).to.exist; // expect "issued-at" timestamp in token claim
     test.expect(decoded.exp).to.exist; // expect "expiration" timestamp in token claim
     return data.token;
 }
 
-var authUser = function(t) {
-    it(t.endpoint+' => should ' + t.should, function * () {
+var authGeocache = function(t) {
+    it(t.endpoint + ' => should ' + t.should, function * () {
         var response = yield test.request.post(t.endpoint).send(t.credentials).expect(t.expect).end();
 
         // Positive Test Case Expects No Errors
         if (t.errors == undefined) {
-            checkUserErrors(response.body.errors);
-            verifyUserToken(response.body.data);
+            checkGeocacheErrors(response.body.errors);
+            verifyGeocacheToken(response.body.data);
         }
         // Negative Test Cases Looking For Specific Errors
         else {
@@ -120,14 +131,14 @@ var authUser = function(t) {
     });
 }
 
-var postUser = function(t) {
-    it(t.endpoint+' => should ' + t.should, function * () {
+var postGeocache = function(t) {
+    it(t.endpoint + ' => should ' + t.should, function * () {
         var response = yield test.request.post(t.endpoint).send(t.payload).expect(t.expect).end();
 
         // Positive Test Case Expects No Errors
         if (t.errors == undefined) {
-            checkUserErrors(response.body.errors);
-            checkUserData(response.body.data);
+            checkGeocacheErrors(response.body.errors);
+            checkGeocacheData(response.body.data);
         }
         // Negative Test Cases Looking For Specific Errors
         else {
@@ -136,27 +147,27 @@ var postUser = function(t) {
     });
 }
 
-var getUser = function(t) {
-    it(t.endpoint+' => should ' + t.should, function * () {
+var getGeocache = function(t) {
+    it(t.endpoint + ' =>\tshould ' + t.should, function * () {
         // Check for wildcard :id in endpoint for tests using id in URL
         var modifiedEndpoint = _.clone(t.endpoint, true);
         var pathArray = modifiedEndpoint.split('/');
-        if(_.includes(pathArray, ":id")) {
+        if (_.includes(pathArray, ":id")) {
             // Get the first baseline data item's ID
-            var userToFind = testUserData.get.baseline[0].user.username;
-            var findUsername = yield test.db.user_by_username(userToFind);
-            test.expect(findUsername.success).to.equal(true);
-            checkUserData(findUsername.data);
-            test.expect(findUsername.data).to.be.an('object');
-            modifiedEndpoint = modifiedEndpoint.replace(":id", findUsername.data.id);
+            var geocacheToFind = testGeocacheData.get.baseline[0].geocachename;
+            var findGeocachename = yield test.db.geocache_by_geocachename(geocacheToFind);
+            test.expect(findGeocachename.success).to.equal(true);
+            checkGeocacheData(findGeocachename.data);
+            test.expect(findGeocachename.data).to.be.an('object');
+            modifiedEndpoint = modifiedEndpoint.replace(":id", findGeocachename.data.id);
         }
 
         var response = undefined;
         // Credentials Provided to Access Resource
         if (t.credentials) {
-            var responseAuth = yield test.request.post("/api/v1/auth/user").send(t.credentials).expect(t.expect).end();
-            checkUserErrors(responseAuth.body.errors);
-            var testToken = verifyUserToken(responseAuth.body.data);
+            var responseAuth = yield test.request.post("/api/v1/auth/geocache").send(t.credentials).expect(t.expect).end();
+            checkGeocacheErrors(responseAuth.body.errors);
+            var testToken = verifyGeocacheToken(responseAuth.body.data);
             var authorizationHeader = {
                 Authorization: "Bearer " + testToken
             };
@@ -167,8 +178,8 @@ var getUser = function(t) {
 
         // Positive Test Case Expects No Errors
         if (t.errors == undefined) {
-            checkUserErrors(response.body.errors);
-            checkUserData(response.body.data);
+            checkGeocacheErrors(response.body.errors);
+            checkGeocacheData(response.body.data);
         }
         // Negative Test Cases Looking For Specific Errors
         else {
@@ -177,27 +188,27 @@ var getUser = function(t) {
     });
 }
 
-var putUser = function(t) {
-    it(t.endpoint+' => should ' + t.should, function * () {
+var putGeocache = function(t) {
+    it(t.endpoint + ' => should ' + t.should, function * () {
         // Check for wildcard :id in endpoint for tests using id in URL
         var modifiedEndpoint = _.clone(t.endpoint, true);
         var pathArray = modifiedEndpoint.split('/');
-        if(_.includes(pathArray, ":id")) {
+        if (_.includes(pathArray, ":id")) {
             // Get the first baseline data item's ID
-            var userToFind = testUserData.put.baseline[0].user.username;
-            var findUsername = yield test.db.user_by_username(userToFind);
-            test.expect(findUsername.success).to.equal(true);
-            checkUserData(findUsername.data);
-            test.expect(findUsername.data).to.be.an('object');
-            modifiedEndpoint = modifiedEndpoint.replace(":id", findUsername.data.id);
+            var geocacheToFind = testGeocacheData.put.baseline[0].geocachename;
+            var findGeocachename = yield test.db.geocache_by_geocachename(geocacheToFind);
+            test.expect(findGeocachename.success).to.equal(true);
+            checkGeocacheData(findGeocachename.data);
+            test.expect(findGeocachename.data).to.be.an('object');
+            modifiedEndpoint = modifiedEndpoint.replace(":id", findGeocachename.data.id);
         }
 
         var response = undefined;
         // Credentials Provided to Access Resource
         if (t.credentials) {
-            var responseAuth = yield test.request.post("/api/v1/auth/user").send(t.credentials).send(t.payload).expect(t.expect).end();
-            checkUserErrors(responseAuth.body.errors);
-            var testToken = verifyUserToken(responseAuth.body.data);
+            var responseAuth = yield test.request.post("/api/v1/auth/geocache").send(t.credentials).send(t.payload).expect(t.expect).end();
+            checkGeocacheErrors(responseAuth.body.errors);
+            var testToken = verifyGeocacheToken(responseAuth.body.data);
             var authorizationHeader = {
                 Authorization: "Bearer " + testToken
             };
@@ -208,8 +219,8 @@ var putUser = function(t) {
 
         // Positive Test Case Expects No Errors
         if (t.errors == undefined) {
-            checkUserErrors(response.body.errors);
-            checkUserData(response.body.data);
+            checkGeocacheErrors(response.body.errors);
+            checkGeocacheData(response.body.data);
         }
         // Negative Test Cases Looking For Specific Errors
         else {
@@ -218,27 +229,27 @@ var putUser = function(t) {
     });
 }
 
-var delUser = function(t) {
-    it(t.endpoint+' => should ' + t.should, function * () {
+var delGeocache = function(t) {
+    it(t.endpoint + ' => should ' + t.should, function * () {
         // Check for wildcard :id in endpoint for tests using id in URL
         var modifiedEndpoint = _.clone(t.endpoint, true);
         var pathArray = modifiedEndpoint.split('/');
-        if(_.includes(pathArray, ":id")) {
+        if (_.includes(pathArray, ":id")) {
             // Get the first baseline data item's ID
-            var userToFind = testUserData.del.baseline[0].user.username;
-            var findUsername = yield test.db.user_by_username(userToFind);
-            test.expect(findUsername.success).to.equal(true);
-            checkUserData(findUsername.data);
-            test.expect(findUsername.data).to.be.an('object');
-            modifiedEndpoint = modifiedEndpoint.replace(":id", findUsername.data.id);
+            var geocacheToFind = testGeocacheData.del.baseline[0].geocachename;
+            var findGeocachename = yield test.db.geocache_by_geocachename(geocacheToFind);
+            test.expect(findGeocachename.success).to.equal(true);
+            checkGeocacheData(findGeocachename.data);
+            test.expect(findGeocachename.data).to.be.an('object');
+            modifiedEndpoint = modifiedEndpoint.replace(":id", findGeocachename.data.id);
         }
 
         var response = undefined;
         // Credentials Provided to Access Resource
         if (t.credentials) {
-            var responseAuth = yield test.request.post("/api/v1/auth/user").send(t.credentials).expect(t.expect).end();
-            checkUserErrors(responseAuth.body.errors);
-            var testToken = verifyUserToken(responseAuth.body.data);
+            var responseAuth = yield test.request.post("/api/v1/auth/geocache").send(t.credentials).expect(t.expect).end();
+            checkGeocacheErrors(responseAuth.body.errors);
+            var testToken = verifyGeocacheToken(responseAuth.body.data);
             var authorizationHeader = {
                 Authorization: "Bearer " + testToken
             };
@@ -249,8 +260,8 @@ var delUser = function(t) {
 
         // Positive Test Case Expects No Errors
         if (t.errors == undefined) {
-            checkUserErrors(response.body.errors);
-            checkUserDeleteData(response.body.data);
+            checkGeocacheErrors(response.body.errors);
+            checkGeocacheDeleteData(response.body.data);
         }
         // Negative Test Cases Looking For Specific Errors
         else {
@@ -260,28 +271,28 @@ var delUser = function(t) {
 }
 
 /* 
-	   API Endpoint Tests for User
+	   API Endpoint Tests for Geocache
 */
-describe('User Authentication Tests => /api/v1/auth/user', function() {
+describe('Geocache Authentication Tests => /api/v1/auth/geocache', function() {
     before(function(done) {
         console.log("\t1. baselining db");
-        deleteUserBaseline(testUserData.auth.baseline).
+        deleteGeocacheBaseline(testGeocacheData.auth.baseline).
         then(
             deleteResponses => {
-                checkUserDelete(deleteResponses);
-                return createUserBaseline(testUserData.auth.baseline);
+                checkGeocacheDelete(deleteResponses);
+                return createGeocacheBaseline(testGeocacheData.auth.baseline);
             },
             error => {
-                return createUserBaseline(testUserData.auth.baseline);
+                return createGeocacheBaseline(testGeocacheData.auth.baseline);
             }
         ).then(
             createResponses => {
-                checkUserCreate(createResponses);
+                checkGeocacheCreate(createResponses);
                 console.log("\t2. successfully created baseline");
                 done();
             },
             error => {
-                checkUserErrors(error);
+                checkGeocacheErrors(error);
                 console.log("\t2. * errors creating new baseline");
                 done();
             }
@@ -289,35 +300,37 @@ describe('User Authentication Tests => /api/v1/auth/user', function() {
     });
 
     // Authentication "shoulds" Magic
-    _.forEach(testUserData.auth.tests, authUser);
+    _.forEach(testGeocacheData.auth.tests, authGeocache);
 });
 
-describe('User POST Tests => /api/v1/user', function() {
+describe('Geocache POST Tests => /api/v1/geocache', function() {
     before(function(done) {
         console.log("\t1. baselining db");
 
         // Deep clone baseline so we can delete zombie node
         // from last positive POST case run
-        var baselinePlusZombieUser = _.clone(testUserData.post.baseline, true);
-        baselinePlusZombieUser.push({ user: testUserData.post.tests[0].payload });
+        var baselinePlusZombieGeocache = _.clone(testGeocacheData.post.baseline, true);
+        baselinePlusZombie.push({
+            geocache: testGeocacheData.post.tests[0].payload
+        });
 
-        deleteUserBaseline(baselinePlusZombieUser).
+        deleteGeocacheBaseline(baselinePlusZombie).
         then(
             deleteResponses => {
-                checkUserDelete(deleteResponses);
-                return createUserBaseline(testUserData.post.baseline);
+                checkGeocacheDelete(deleteResponses);
+                return createGeocacheBaseline(testGeocacheData.post.baseline);
             },
             error => {
-                return createUserBaseline(testUserData.post.baseline);
+                return createGeocacheBaseline(testGeocacheData.post.baseline);
             }
         ).then(
             createResponses => {
-                checkUserCreate(createResponses);
+                checkGeocacheCreate(createResponses);
                 console.log("\t2. successfully created baseline");
                 done();
             },
             error => {
-                checkUserErrors(error);
+                checkGeocacheErrors(error);
                 console.log("\t2. * errors creating new baseline");
                 done();
             }
@@ -325,29 +338,29 @@ describe('User POST Tests => /api/v1/user', function() {
     });
 
     // POST "shoulds" Magic
-    _.forEach(testUserData.post.tests, postUser);
+    _.forEach(testGeocacheData.post.tests, postGeocache);
 });
 
-describe('User GET Tests => /api/v1/user', function() {
+describe('Geocache GET Tests => /api/v1/geocache', function() {
     before(function(done) {
         console.log("\t1. baselining db");
-        deleteUserBaseline(testUserData.get.baseline).
+        deleteGeocacheBaseline(testGeocacheData.get.baseline).
         then(
             deleteResponses => {
-                checkUserDelete(deleteResponses);
-                return createUserBaseline(testUserData.get.baseline);
+                checkGeocacheDelete(deleteResponses);
+                return createGeocacheBaseline(testGeocacheData.get.baseline);
             },
             error => {
-                return createUserBaseline(testUserData.get.baseline);
+                return createGeocacheBaseline(testGeocacheData.get.baseline);
             }
         ).then(
             createResponses => {
-                checkUserCreate(createResponses);
+                checkGeocacheCreate(createResponses);
                 console.log("\t2. successfully created baseline");
                 done();
             },
             error => {
-                checkUserErrors(error);
+                checkGeocacheErrors(error);
                 console.log("\t2. * errors creating new baseline");
                 done();
             }
@@ -355,29 +368,29 @@ describe('User GET Tests => /api/v1/user', function() {
     });
 
     // GET "shoulds" Magic
-    _.forEach(testUserData.get.tests, getUser);
+    _.forEach(testGeocacheData.get.tests, getGeocache);
 });
 
-describe('User PUT Tests => /api/v1/user', function() {
+describe('Geocache PUT Tests => /api/v1/geocache', function() {
     before(function(done) {
         console.log("\t1. baselining db");
-        deleteUserBaseline(testUserData.put.baseline).
+        deleteGeocacheBaseline(testGeocacheData.put.baseline).
         then(
             deleteResponses => {
-                checkUserDelete(deleteResponses);
-                return createUserBaseline(testUserData.put.baseline);
+                checkGeocacheDelete(deleteResponses);
+                return createGeocacheBaseline(testGeocacheData.put.baseline);
             },
             error => {
-                return createUserBaseline(testUserData.put.baseline);
+                return createGeocacheBaseline(testGeocacheData.put.baseline);
             }
         ).then(
             createResponses => {
-                checkUserCreate(createResponses);
+                checkGeocacheCreate(createResponses);
                 console.log("\t2. successfully created baseline");
                 done();
             },
             error => {
-                checkUserErrors(error);
+                checkGeocacheErrors(error);
                 console.log("\t2. * errors creating new baseline");
                 done();
             }
@@ -385,29 +398,29 @@ describe('User PUT Tests => /api/v1/user', function() {
     });
 
     // PUT "shoulds" Magic
-    _.forEach(testUserData.put.tests, putUser);
+    _.forEach(testGeocacheData.put.tests, putGeocache);
 });
 
-describe('User DELETE Tests => /api/v1/user', function() {
+describe('Geocache DELETE Tests => /api/v1/geocache', function() {
     before(function(done) {
         console.log("\t1. baselining db");
-        deleteUserBaseline(testUserData.del.baseline).
+        deleteGeocacheBaseline(testGeocacheData.del.baseline).
         then(
             deleteResponses => {
-                checkUserDelete(deleteResponses);
-                return createUserBaseline(testUserData.del.baseline);
+                checkGeocacheDelete(deleteResponses);
+                return createGeocacheBaseline(testGeocacheData.del.baseline);
             },
             error => {
-                return createUserBaseline(testUserData.del.baseline);
+                return createGeocacheBaseline(testGeocacheData.del.baseline);
             }
         ).then(
             createResponses => {
-                checkUserCreate(createResponses);
+                checkGeocacheCreate(createResponses);
                 console.log("\t2. successfully created baseline");
                 done();
             },
             error => {
-                checkUserErrors(error);
+                checkGeocacheErrors(error);
                 console.log("\t2. * errors creating new baseline");
                 done();
             }
@@ -415,24 +428,35 @@ describe('User DELETE Tests => /api/v1/user', function() {
     });
 
     // DELETE "shoulds" Magic
-    _.forEach(testUserData.del.tests, delUser);
+    _.forEach(testGeocacheData.del.tests, delGeocache);
 });
 
-var createUserBaseline = co.wrap(function * (baseline) {
+var createGeocacheBaseline = co.wrap(function * (baseline) {
     var creates = [];
     for (var index in baseline) {
-        var user = baseline[index].user;
-        var create = yield * test.createUser(user);
-        creates.push(create);
+    	var geocache = baseline[index].geocache;
+    	var admin = baselin[index].admin;
+    	var user = baseline[index].user;
+        if (geocache) {
+            creates.push(yield * createGeocache(geocache));
+        }
+        if (admin) {
+        	creates.push(yield * createAdmin(admin));
+        }
+        if (user) {
+        	creates.push(yield * createUser(user));
+        }
+
+
     }
     return yield Promise.all(creates);
 });
 
-var deleteUserBaseline = co.wrap(function * (baseline) {
+var deleteGeocacheBaseline = co.wrap(function * (baseline) {
     var deletes = [];
     for (var index in baseline) {
-        var user = baseline[index].user;
-        var del = yield * test.deleteUser(user);
+        var geocache = baseline[index].geocache;
+        var del = yield * deleteGeocache(geocache);
         deletes.push(del);
     }
     return yield Promise.all(deletes);

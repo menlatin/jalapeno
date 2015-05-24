@@ -119,11 +119,7 @@ module.exports = function AdminLogin(db, bcrypt, fs, jwt, parse, errors, validat
                             var claims = {
                                 iss: "digeocache",
                                 username: adminToCompare.username,
-                                admin: true,
-                                pri: {
-                                    admin: ["create", "read", "update", "delete"],
-                                    user: ["create", "read", "update", "delete"]
-                                }
+                                admin: true
                             };
                             var token = jwt.sign(claims, privateKey, {
                                 algorithm: 'RS256',

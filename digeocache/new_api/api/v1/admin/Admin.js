@@ -110,7 +110,11 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
             // console.log("admin.post");
             try {
                 // TODO: Be sure this is being requested by authenticated admin w/proper privileges
-
+                var claims = this.state.jwtdata;
+                if(!claims.admin) {
+                    return yield admin.invalid([errors.UNPRIVILEGED(claims.username)]);
+                }
+                
                 var admin_pre = yield parse(this);
                 var admin_test = validate.schema(admin.schema, admin_pre);
                 if (admin_test.valid) {
@@ -136,7 +140,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                         return yield admin.invalidPost(admin_pre, checkEmail.errors);
                     }
 
-                    if(isTaken) {
+                    if (isTaken) {
                         return yield admin.invalidPost(admin_pre, takenErrors);
                     }
 
@@ -174,10 +178,14 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
             // console.log("admin.get");
             try {
                 // TODO: Be sure this is being requested by authenticated admin w/proper privileges
+                var claims = this.state.jwtdata;
+                if(!claims.admin) {
+                    return yield admin.invalid([errors.UNPRIVILEGED(claims.username)]);
+                }
 
                 // No parameter provided in URL
                 if ((this.params.id == undefined || this.params.id == null) && _.isEmpty(this.query)) {
-                    // Return all admins      
+                    // Return all admins 
                     var allAdmins = yield db.admins_all();
                     if (allAdmins.success) {
                         return yield admin.success(allAdmins.data);
@@ -204,6 +212,10 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
             // console.log("admin.put");
             try {
                 // TODO: Be sure this is being requested by authenticated admin w/proper privileges
+                var claims = this.state.jwtdata;
+                if(!claims.admin) {
+                    return yield admin.invalid([errors.UNPRIVILEGED(claims.username)]);
+                }
 
                 // Request payload
                 var admin_pre = yield parse(this);
@@ -266,6 +278,10 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
             // console.log("admin.del");
             try {
                 // TODO: Be sure this is being requested by authenticated admin w/proper privileges
+                var claims = this.state.jwtdata;
+                if(!claims.admin) {
+                    return yield admin.invalid([errors.UNPRIVILEGED(claims.username)]);
+                }
 
                 // Request payload
                 var admin_pre = yield parse(this);

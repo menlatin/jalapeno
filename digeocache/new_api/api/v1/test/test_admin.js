@@ -33,34 +33,7 @@ var publicKey = fs.readFileSync('api/v1/auth/ssl/demo.rsa.pub');
 
 var testAdminData = require('./data_test_admin.js');
 
-var createAdmin = function * (testAdmin) {
-    // Deep clone test admin reference
-    var admin = _.clone(testAdmin, true);
-
-    var salt = yield bcrypt.genSalt(10);
-    var hash = yield bcrypt.hash(admin.password, salt);
-
-    // Delete password key/value from post object, replace w/hash
-    delete admin.password;
-    admin.hash = hash;
-
-    // Add automatic date fields
-    var now = new Date();
-    admin.created_on = now;
-    admin.updated_on = now;
-    admin.login_on = "";
-
-    return test.db.admin_create(admin);
-}
-
-var deleteAdmin = function * (testAdmin) {
-    // Deep clone test admin reference
-    var admin = _.clone(testAdmin, true);
-    return test.db.admin_delete_by_username(admin.username);
-};
-
 var printErrors = function(errors) {
-    console.log("called printErrors");
     if (errors) {
         return JSON.stringify(errors, null, '\t') + "\n";
     } else {
@@ -149,7 +122,19 @@ var authAdmin = function(t) {
 
 var postAdmin = function(t) {
     it(t.endpoint+' => should ' + t.should, function * () {
-        var response = yield test.request.post(t.endpoint).send(t.payload).expect(t.expect).end();
+        var response = undefined;
+        // Credentials Provided to Access Resource
+        if (t.credentials) {
+            var responseAuth = yield test.request.post("/api/v1/auth/admin").send(t.credentials).expect(t.expect).end();
+            checkAdminErrors(responseAuth.body.errors);
+            var testToken = verifyAdminToken(responseAuth.body.data);
+            var authorizationHeader = {
+                Authorization: "Bearer " + testToken
+            };
+            response = yield test.request.post(t.endpoint).set(authorizationHeader).send(t.payload).expect(t.expect).end();
+        } else {
+            response = yield test.request.post(t.endpoint).send(t.payload).expect(t.expect).end();
+        }
 
         // Positive Test Case Expects No Errors
         if (t.errors == undefined) {
@@ -164,13 +149,13 @@ var postAdmin = function(t) {
 }
 
 var getAdmin = function(t) {
-    it(t.endpoint+' =>\tshould ' + t.should, function * () {
+    it(t.endpoint+' => should ' + t.should, function * () {
         // Check for wildcard :id in endpoint for tests using id in URL
         var modifiedEndpoint = _.clone(t.endpoint, true);
         var pathArray = modifiedEndpoint.split('/');
         if(_.includes(pathArray, ":id")) {
             // Get the first baseline data item's ID
-            var userToFind = testAdminData.get.baseline[0].username;
+            var userToFind = testAdminData.get.baseline[0].admin.username;
             var findUsername = yield test.db.admin_by_username(userToFind);
             test.expect(findUsername.success).to.equal(true);
             checkAdminData(findUsername.data);
@@ -211,7 +196,7 @@ var putAdmin = function(t) {
         var pathArray = modifiedEndpoint.split('/');
         if(_.includes(pathArray, ":id")) {
             // Get the first baseline data item's ID
-            var userToFind = testAdminData.put.baseline[0].username;
+            var userToFind = testAdminData.put.baseline[0].admin.username;
             var findUsername = yield test.db.admin_by_username(userToFind);
             test.expect(findUsername.success).to.equal(true);
             checkAdminData(findUsername.data);
@@ -252,7 +237,7 @@ var delAdmin = function(t) {
         var pathArray = modifiedEndpoint.split('/');
         if(_.includes(pathArray, ":id")) {
             // Get the first baseline data item's ID
-            var userToFind = testAdminData.del.baseline[0].username;
+            var userToFind = testAdminData.del.baseline[0].admin.username;
             var findUsername = yield test.db.admin_by_username(userToFind);
             test.expect(findUsername.success).to.equal(true);
             checkAdminData(findUsername.data);
@@ -325,10 +310,10 @@ describe('Admin POST Tests => /api/v1/admin', function() {
 
         // Deep clone baseline so we can delete zombie node
         // from last positive POST case run
-        var baselinePlusZombie = _.clone(testAdminData.post.baseline, true);
-        baselinePlusZombie.push(testAdminData.post.tests[0].payload);
+        var baselinePlusZombieAdmin = _.clone(testAdminData.post.baseline, true);
+        baselinePlusZombieAdmin.push({ admin: testAdminData.post.tests[0].payload });
 
-        deleteAdminBaseline(baselinePlusZombie).
+        deleteAdminBaseline(baselinePlusZombieAdmin).
         then(
             deleteResponses => {
                 checkAdminDelete(deleteResponses);
@@ -448,8 +433,8 @@ describe('Admin DELETE Tests => /api/v1/admin', function() {
 var createAdminBaseline = co.wrap(function * (baseline) {
     var creates = [];
     for (var index in baseline) {
-        var admin = baseline[index];
-        var create = yield * createAdmin(admin);
+        var admin = baseline[index].admin;
+        var create = yield * test.createAdmin(admin);
         creates.push(create);
     }
     return yield Promise.all(creates);
@@ -457,8 +442,9 @@ var createAdminBaseline = co.wrap(function * (baseline) {
 
 var deleteAdminBaseline = co.wrap(function * (baseline) {
     var deletes = [];
-    for (var admin in baseline) {
-        var del = yield * deleteAdmin(baseline[admin]);
+    for (var index in baseline) {
+        var admin = baseline[index].admin;
+        var del = yield * test.deleteAdmin(admin);
         deletes.push(del);
     }
     return yield Promise.all(deletes);

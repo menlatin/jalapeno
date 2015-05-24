@@ -10,13 +10,15 @@ userData.del = {};
 
 userData.auth.baseline = [];
 userData.auth.baseline[0] = {
-    username: "test_auth_good_user1",
-    password: "test_auth_good_user_password1",
-    firstname: "TestAuth",
-    lastname: "GoodUser1",
-    email: "test_auth_good_user1@gmail.com",
-    birthday: "1969-12-31T06:00:00.000Z",
-    phone: "5558675309"
+    user: {
+        username: "test_auth_good_user1",
+        password: "test_auth_good_user_password1",
+        firstname: "TestAuth",
+        lastname: "GoodUser1",
+        email: "test_auth_good_user1@gmail.com",
+        birthday: "1969-12-31T06:00:00.000Z",
+        phone: "5558675309"
+    }
 };
 
 userData.auth.tests = [];
@@ -99,13 +101,15 @@ userData.auth.tests[6] = {
 
 userData.post.baseline = [];
 userData.post.baseline[0] = {
-    username: "test_post_existing_user1",
-    password: "test_post_existing_user_password1",
-    firstname: "TestPost",
-    lastname: "ExistingUser1",
-    email: "test_post_existing_user1@gmail.com",
-    birthday: "1969-12-31T06:00:00.000Z",
-    phone: "5558675309"
+    user: {
+        username: "test_post_existing_user1",
+        password: "test_post_existing_user_password1",
+        firstname: "TestPost",
+        lastname: "ExistingUser1",
+        email: "test_post_existing_user1@gmail.com",
+        birthday: "1969-12-31T06:00:00.000Z",
+        phone: "5558675309"
+    }
 };
 
 userData.post.tests = [];
@@ -158,31 +162,37 @@ userData.post.tests[2] = {
 
 userData.get.baseline = [];
 userData.get.baseline[0] = {
-    username: "test_get_user1",
-    password: "test_get_user_password1",
-    firstname: "TestGet",
-    lastname: "User1",
-    email: "test_get_user1@gmail.com",
-    birthday: "1969-12-31T06:00:00.000Z",
-    phone: "5558675309"
+    user: {
+        username: "test_get_user1",
+        password: "test_get_user_password1",
+        firstname: "TestGet",
+        lastname: "User1",
+        email: "test_get_user1@gmail.com",
+        birthday: "1969-12-31T06:00:00.000Z",
+        phone: "5558675309"
+    }
 };
 userData.get.baseline[1] = {
-    username: "test_get_user2",
-    password: "test_get_user_password2",
-    firstname: "TestGet",
-    lastname: "User2",
-    email: "test_get_user2@gmail.com",
-    birthday: "1969-12-31T06:00:00.000Z",
-    phone: "5558675309"
+    user: {
+        username: "test_get_user2",
+        password: "test_get_user_password2",
+        firstname: "TestGet",
+        lastname: "User2",
+        email: "test_get_user2@gmail.com",
+        birthday: "1969-12-31T06:00:00.000Z",
+        phone: "5558675309"
+    }
 };
 userData.get.baseline[2] = {
-    username: "test_get_user3",
-    password: "test_get_user_password3",
-    firstname: "TestGet",
-    lastname: "User3",
-    email: "test_get_user3@gmail.com",
-    birthday: "1969-12-31T06:00:00.000Z",
-    phone: "5558675309"
+    user: {
+        username: "test_get_user3",
+        password: "test_get_user_password3",
+        firstname: "TestGet",
+        lastname: "User3",
+        email: "test_get_user3@gmail.com",
+        birthday: "1969-12-31T06:00:00.000Z",
+        phone: "5558675309"
+    }
 };
 
 userData.get.tests = [];
@@ -246,13 +256,15 @@ userData.get.tests[5] = {
 
 userData.put.baseline = [];
 userData.put.baseline[0] = {
-    username: "test_put_user1",
-    password: "test_put_user_password1",
-    firstname: "TestPut",
-    lastname: "User1",
-    email: "test_put_user1@gmail.com",
-    birthday: "1969-12-31T06:00:00.000Z",
-    phone: "5558675309"
+    user: {
+        username: "test_put_user1",
+        password: "test_put_user_password1",
+        firstname: "TestPut",
+        lastname: "User1",
+        email: "test_put_user1@gmail.com",
+        birthday: "1969-12-31T06:00:00.000Z",
+        phone: "5558675309"
+    }
 };
 userData.put.tests = [];
 userData.put.tests[0] = {
@@ -341,13 +353,15 @@ userData.put.tests[5] = {
 
 userData.del.baseline = [];
 userData.del.baseline[0] = {
-    username: "test_del_user1",
-    password: "test_del_user_password1",
-    firstname: "TestDel",
-    lastname: "User1",
-    email: "test_del_user1@gmail.com",
-    birthday: "1969-12-31T06:00:00.000Z",
-    phone: "5558675309"
+    user: {
+        username: "test_del_user1",
+        password: "test_del_user_password1",
+        firstname: "TestDel",
+        lastname: "User1",
+        email: "test_del_user1@gmail.com",
+        birthday: "1969-12-31T06:00:00.000Z",
+        phone: "5558675309"
+    }
 };
 userData.del.tests = [];
 userData.del.tests[0] = {

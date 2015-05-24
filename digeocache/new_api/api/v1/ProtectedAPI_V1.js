@@ -12,6 +12,9 @@ module.exports = function ProtectedAPI_V1(admin,user) {
         this.body = "authController.logout";
     });
 
+    // Admin Registration Protected (unlike User)
+    ProtectedAPI_V1.post('/admin', admin.post);
+
     // Admin routes
     ProtectedAPI_V1.get('/admin', admin.get);
     ProtectedAPI_V1.get('/admin/:id', admin.get);

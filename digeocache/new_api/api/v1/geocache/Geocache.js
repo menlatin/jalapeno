@@ -1,66 +1,3 @@
-// [
-		{
-		    attribute: "title",
-		    type: String,
-		    required: true,
-		    auto: false,
-		    test: validate.regex.test.geocache.TITLE
-		}, {
-		    attribute: "message",
-		    type: String,
-		    required: true,
-		    auto: false,
-		    test: validate.regex.test.geocache.MESSAGE
-		}, {
-		    attribute: "lat",
-		    type: Number,
-		    required: true,
-		    auto: false,
-		    test: validate.regex.test.geocache.LATITUDE
-		}, {
-		    attribute: "lng",
-		    type: Number,
-		    auto: false,
-		    required: true,
-		    auto: false,
-		    test: validate.regex.test.geocache.LONGITUDE
-		}, {
-		    attribute: "currency",
-		    type: String,
-		    required: true,
-		    auto: false,
-		    test: validate.regex.test.geocache.CURRENCY
-		}, {
-		    attribute: "amount",
-		    type: Number,
-		    required: true,
-		    auto: false,
-		    test: validate.regex.test.geocache.AMOUNT
-		}, {
-		    attribute: "is_physical",
-		    type: Boolean,
-		    required: true
-		    auto: false,
-		    test: validate.regex.test.geocache.IS_PHYSICAL
-		}, {
-		    attribute: "delay",
-		    type: Number,
-		    required: true,
-		    auto: false,
-		    test: validate.regex.test.geocache.DELAY
-		}, {
-		    attribute: "drop_count",
-		    type: Number,
-		    required: true,
-		    auto: true
-		}, {
-		    attribute: "dropped_on",
-		    type: Date,
-		    required: true,
-		    auto: true
-		}
-// 	]
-
 // The MIT License (MIT)
 
 // Copyright (c) 2015 Elliott Richerson, Carlos Aari Lotfipour
@@ -87,61 +24,68 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
 
     var geocache = {
         schema: [{
-            attribute: "username",
-            type: "text",
+            attribute: "title",
+            type: String,
             required: true,
             auto: false,
-            test: validate.regex.test.admin.USERNAME
+            test: validate.geocache_title()
         }, {
-            attribute: "password",
-            type: "password",
+            attribute: "message",
+            type: String,
             required: true,
             auto: false,
-            test: validate.regex.test.admin.PASSWORD
+            test: validate.geocache_message()
         }, {
-            attribute: "email",
-            type: "text",
+            attribute: "lat",
+            type: Number,
             required: true,
             auto: false,
-            test: validate.regex.test.admin.EMAIL
+            test: validate.geocache_lat()
         }, {
-            attribute: "birthday",
-            type: "date",
-            required: false,
+            attribute: "lng",
+            type: Number,
             auto: false,
-            test: validate.dates.test.admin.BIRTHDAY
+            required: true,
+            auto: false,
+            test: validate.geocache_lng()
         }, {
-            attribute: "phone",
-            type: "text",
-            required: false,
+            attribute: "currency",
+            type: String,
+            required: true,
             auto: false,
-            test: validate.regex.test.admin.PHONE
+            test: validate.geocache_currency()
         }, {
-            attribute: "firstname",
-            type: "text",
-            required: false,
+            attribute: "amount",
+            type: Number,
+            required: true,
             auto: false,
-            test: validate.regex.test.admin.FIRSTNAME
+            test: validate.geocache_amount()
         }, {
-            attribute: "lastname",
-            type: "text",
-            required: false,
+            attribute: "is_physical",
+            type: Boolean,
+            required: true
             auto: false,
-            test: validate.regex.test.admin.LASTNAME
+            test: validate.geocache_is_physical()
+        }, {
+            attribute: "delay",
+            type: Number,
+            required: true,
+            auto: false,
+            test: validate.geocache_delay()
+        }, {
+            attribute: "drop_count",
+            type: Number,
+            required: true,
+            auto: true
         }, {
             attribute: "created_on",
-            type: "date",
-            required: false,
+            type: Date,
+            required: true,
             auto: true
         }, {
             attribute: "updated_on",
-            type: "date",
-            required: false,
-            auto: true
-        }, {
-            attribute: "login_on",
-            type: "date",
-            required: false,
+            type: Date,
+            required: true,
             auto: true
         }],
         success: function(data) {
@@ -170,84 +114,63 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
             };
         },
         post: function * (next) {
-            // console.log("admin.post");
+            // console.log("geocache.post");
             try {
-                // TODO: Be sure this is being requested by authenticated admin w/proper privileges
+                // TODO: Be sure this is being requested by authenticated geocache w/proper privileges
+                
 
-                var admin_pre = yield parse(this);
-                var admin_test = validate.schema(admin.schema, admin_pre);
-                if (admin_test.valid) {
-                    // Check if username / email already in use
-                    var checkUsername = yield db.admin_username_taken(admin_test.data.username);
-                    if (checkUsername.success) {
-                        if (checkUsername.taken) {
-                            return yield geocache.invalidPost(admin_pre, [errors.user.USERNAME_TAKEN("username")]);
-                        }
-                    } else {
-                        return yield geocache.invalidPost(admin_pre, checkUsername.errors);
-                    }
-                    var checkEmail = yield db.admin_email_taken(admin_test.data.email);
-                    if (checkEmail.success) {
-                        if (checkEmail.taken) {
-                            return yield geocache.invalidPost(admin_pre, [errors.user.EMAIL_TAKEN("email")]);
-                        }
-                    } else {
-                        return yield geocache.invalidPost(admin_pre, checkEmail.errors);
-                    }
 
-                    // Generate salt/hash using bcrypt
-                    var salt = yield bcrypt.genSalt(10);
-                    var hash = yield bcrypt.hash(admin_test.data.password, salt);
 
-                    // Delete password key/value from post object, replace w/hash
-                    var pw = admin_test.data.password;
-                    delete admin_test.data.password;
-                    admin_test.data.hash = hash;
+                var geocache_pre = yield parse(this);
+                var geocache_test = validate.schema(geocache.schema, geocache_pre);
+                if (geocache_test.valid) {
 
-                    // Add automatic date fields
+
+                    // Add automatic fields
                     var now = new Date();
-                    admin_test.data.created_on = now;
-                    admin_test.data.updated_on = now;
-                    admin_test.data.login_on = "";
+                    geocache_test.data.created_on = now;
+                    geocache_test.data.updated_on = now;
+                    geocache_test.data.drop_count = 1;
+
                     // Request DB Create Node and Respond Accordingly
-                    var create = yield db.admin_create(admin_test.data);
+                    var create = yield db.geocache_create(geocache_test.data);
                     if (create.success) {
                         return yield geocache.success(create.data);
                     } else {
-                        return yield geocache.invalidPost(admin_pre, create.errors);
+                        return yield geocache.invalidPost(geocache_pre, create.errors);
                     }
 
                 } else {
                     // Request was not valid,
-                    return yield geocache.invalidPost(admin_pre, admin_test.errors);
+                    return yield geocache.invalidPost(geocache_pre, geocache_test.errors);
                 }
             } catch (e) {
-                return yield geocache.catchErrors(e, admin_pre);
+                return yield geocache.catchErrors(e, geocache_pre);
             }
         },
         get: function * (next) {
-            // console.log("admin.get");
+            // console.log("geocache.get");
             try {
-                // TODO: Be sure this is being requested by authenticated admin w/proper privileges
+                // TODO: Be sure this is being requested by authenticated geocache w/proper privileges
 
                 // No parameter provided in URL
-                if (this.params.id == undefined && this.params.id == null) {
-                    // Return all admins      
-                    var allAdmins = yield db.admins_all();
-                    if (allAdmins.success) {
-                        return yield geocache.success(allAdmins.data);
+                if ((this.params.id == undefined || this.params.id == null) && _.isEmpty(this.query)) {
+                    // Return all geocaches      
+                    var allGeocaches = yield db.geocaches_all();
+                    if (allGeocaches.success) {
+                        return yield geocache.success(allGeocaches.data);
                     } else {
-                        return yield geocache.invalid(allAdmins.errors);
+                        return yield geocache.invalid(allGeocaches.errors);
                     }
                 }
                 // Parameter exists in URL
                 else {
-                    // Try to identify existing admin
-                    var findAdmin = yield geocache.identifyFromURL(this.params.id);
-                    if (findAdmin.success) {
-                        return yield geocache.success(findAdmin.data);
+                    // Try to identify existing geocache
+                    var findGeocache = yield geocache.identifyFromURL(this.params.id);
+                    if (findGeocache.success) {
+                        return yield geocache.success(findGeocache.data);
                     } else {
-                        return yield geocache.invalid(findAdmin.errors);
+                        return yield geocache.invalid(findGeocache.errors);
                     }
                 }
             } catch (e) {
@@ -256,178 +179,160 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
             }
         },
         put: function * (next) {
-            // console.log("admin.put");
+            // console.log("geocache.put");
             try {
-                // TODO: Be sure this is being requested by authenticated admin w/proper privileges
+                // TODO: Be sure this is being requested by authenticated geocache w/proper privileges
 
                 // Request payload
-                var admin_pre = yield parse(this);
+                var geocache_pre = yield parse(this);
 
                 // No parameter provided in URL
-                if (this.params.id == undefined && this.params.id == null) {
+                if ((this.params.id == undefined && this.params.id == null) && _.isEmpty(this.query)) {
                     // Perhaps request is for a batch update
-                    // batch_test = validate.schemaForBatchUpdate(admin.schema, admin_pre);
+                    // batch_test = validate.schemaForBatchUpdate(geocache.schema, geocache_pre);
                     // if (batch_test.valid) {
                     //     // Loop through validated data and perform updates
                     // }
                     // else {
-                    //     return yield geocache.invalidPost(admin_pre, batch_test.errors);
+                    //     return yield geocache.invalidPost(geocache_pre, batch_test.errors);
                     // }
-                    return yield geocache.invalidPost(admin_pre, [errors.UNSUPPORTED()]);
+                    return yield geocache.invalidPost(geocache_pre, [errors.UNSUPPORTED()]);
                 }
                 // Parameter exists in URL
                 else {
-                    // Try to identify existing admin
-                    var existingAdmin = undefined;
-                    var findAdmin = yield geocache.identifyFromURL(this.params.id);
-                    if (findAdmin.success) {
-                        existingAdmin = findAdmin.data;
+                    // Try to identify existing geocache
+                    var existingGeocache = undefined;
+                    var findGeocache = yield geocache.identifyFromURL(this.params.id);
+                    if (findGeocache.success) {
+                        existingGeocache = findGeocache.data;
                     } else {
-                        return yield geocache.invalidPost(admin_pre, findAdmin.errors);
+                        return yield geocache.invalidPost(geocache_pre, findGeocache.errors);
                     }
                     // If we got this far, we must have found a match.
                     // Now validate what we're trying to update
-                    admin_test = validate.schemaForUpdate(admin.schema, admin_pre);
-                    if (admin_test.valid) {
-                        // Is the admin trying to change their password?
-                        if (admin_test.data.password) {
+                    geocache_test = validate.schemaForUpdate(geocache.schema, geocache_pre);
+                    if (geocache_test.valid) {
+                        // Is the geocache trying to change their password?
+                        if (geocache_test.data.password) {
                             // Generate new salt/hash using bcrypt
                             var salt = yield bcrypt.genSalt(10);
-                            var hash = yield bcrypt.hash(admin_test.data.password, salt);
+                            var hash = yield bcrypt.hash(geocache_test.data.password, salt);
                             // Delete password key/value from update object, replace w/hash
-                            var pw = admin_test.data.password;
-                            delete admin_test.data.password;
-                            admin_test.data.hash = hash;
+                            var pw = geocache_test.data.password;
+                            delete geocache_test.data.password;
+                            geocache_test.data.hash = hash;
                         }
                         // Add automatic date fields
                         var now = new Date();
-                        admin_test.data.updated_on = now;
+                        geocache_test.data.updated_on = now;
                         // Request DB update
-                        var adminUpdate = yield db.admin_update(admin_test.data, existingAdmin.id);
-                        if (adminUpdate.success) {
-                            return yield geocache.success(adminUpdate.data);
+                        var geocacheUpdate = yield db.geocache_update(geocache_test.data, existingGeocache.id);
+                        if (geocacheUpdate.success) {
+                            return yield geocache.success(geocacheUpdate.data);
                         } else {
-                            return yield geocache.invalidPost(admin_pre, adminUpdate.errors);
+                            return yield geocache.invalidPost(geocache_pre, geocacheUpdate.errors);
                         }
                     } else {
-                        return yield geocache.invalidPost(admin_pre, admin_test.errors);
+                        return yield geocache.invalidPost(geocache_pre, geocache_test.errors);
                     }
                 }
             } catch (e) {
-                return yield geocache.catchErrors(e, admin_pre);
+                return yield geocache.catchErrors(e, geocache_pre);
             }
         },
         del: function * (next) {
-            // console.log("admin.del");
+            // console.log("geocache.del");
             try {
-                // TODO: Be sure this is being requested by authenticated admin w/proper privileges
+                // TODO: Be sure this is being requested by authenticated geocache w/proper privileges
 
                 // Request payload
-                var admin_pre = yield parse(this);
+                var geocache_pre = yield parse(this);
 
                 // No parameter provided in URL
                 if (this.params.id == undefined && this.params.id == null) {
                     // Perhaps request is for a batch delete
-                    // batch_test = validate.schemaForBatchDelete(admin.schema, admin_pre);
+                    // batch_test = validate.schemaForBatchDelete(geocache.schema, geocache_pre);
                     // if (batch_test.valid) {
                     //     // Loop through validated data and perform deletes
                     // }
                     // else {
-                    //     return yield geocache.invalidPost(admin_pre, batch_test.errors);
+                    //     return yield geocache.invalidPost(geocache_pre, batch_test.errors);
                     // }
-                    return yield geocache.invalidPost(admin_pre, [errors.UNSUPPORTED()]);
+                    return yield geocache.invalidPost(geocache_pre, [errors.UNSUPPORTED()]);
                 }
                 // Parameter exists in URL
                 else {
-                    // Try to identify existing admin
-                    var existingAdmin = undefined;
-                    var findAdmin = yield geocache.identifyFromURL(this.params.id);
-                    if (findAdmin.success) {
-                        existingAdmin = findAdmin.data;
+                    // Try to identify existing geocache
+                    var existingGeocache = undefined;
+                    var findGeocache = yield geocache.identifyFromURL(this.params.id);
+                    if (findGeocache.success) {
+                        existingGeocache = findGeocache.data;
                     } else {
-                        return yield geocache.invalidPost(admin_pre, findAdmin.errors);
+                        return yield geocache.invalidPost(geocache_pre, findGeocache.errors);
                     }
                     // If we got this far, we must have found a match to delete.
-                    var adminDelete = yield db.admin_delete(admin_test.data, existingAdmin.id);
-                    if (adminDelete.success) {
-                        return yield geocache.success(adminDelete.data);
+                    var geocacheDelete = yield db.geocache_delete_by_id(existingGeocache.id);
+                    if (geocacheDelete.success) {
+                        return yield geocache.success(geocacheDelete.data);
                     } else {
-                        return yield geocache.invalidPost(admin_pre, adminDelete.errors);
+                        return yield geocache.invalidPost(geocache_pre, geocacheDelete.errors);
                     }
                 }
             } catch (e) {
-                return yield geocache.catchErrors(e, admin_pre);
+                return yield geocache.catchErrors(e, geocache_pre);
             }
         },
         identifyFromURL: function(params_id) {
             return function * (next) {
-                // Try to identify existing admin
+                // Try to identify existing geocache
                 var response = {};
                 var id_test = validate.id(params_id);
-                var username_test = validate.attribute(admin.schema, params_id, "username");
-                var email_test = validate.attribute(admin.schema, params_id, "email");
+                var username_test = validate.attribute(geocache.schema, params_id, "username");
+                var email_test = validate.attribute(geocache.schema, params_id, "email");
 
                 if (id_test.valid) {
-                    var adminByID = yield db.admin_by_id(id_test.data.toString());
-                    if (adminByID.success) {
+                    var geocacheByID = yield db.geocache_by_id(id_test.data.toString());
+                    if (geocacheByID.success) {
                         response.success = true;
-                        response.data = adminByID.data;
+                        response.data = geocacheByID.data;
                         return response;
                     } else {
                         response.success = false;
-                        response.errors = adminByID.errors;
+                        response.errors = geocacheByID.errors;
                         return response;
                     }
                 } else if (username_test.valid) {
-                    var adminByUsername = yield db.admin_by_username(username_test.data);
-                    if (adminByUsername.success) {
+                    var geocacheByUsername = yield db.geocache_by_username(username_test.data);
+                    if (geocacheByUsername.success) {
                         response.success = true;
-                        response.data = adminByUsername.data;
+                        response.data = geocacheByUsername.data;
                         return response;
                     } else {
                         response.success = false;
-                        response.errors = adminByUsername.errors;
+                        response.errors = geocacheByUsername.errors;
                         return response;
                     }
                 } else if (email_test.valid) {
-                    var adminByEmail = yield db.admin_by_email(email_test.data);
-                    if (adminByEmail.success) {
+                    var geocacheByEmail = yield db.geocache_by_email(email_test.data);
+                    if (geocacheByEmail.success) {
                         response.success = true;
-                        response.data = adminByEmail.data;
+                        response.data = geocacheByEmail.data;
                         return response;
                     } else {
                         response.success = false;
-                        response.errors = adminByEmail.errors;
+                        response.errors = geocacheByEmail.errors;
                         return response;
                     }
                 } else {
                     response.success = false;
-                    response.errors = [errors.admin.UNIDENTIFIABLE()];
+                    response.errors = [errors.UNIDENTIFIABLE(params_id)];
                     return response;
                 }
             };
         },
         catchErrors: function(err, pre) {
             return function * (next) {
-                // Database Connectivity Issue
-                if (err.code == "ECONNREFUSED") {
-                    return yield geocache.invalidPost(pre, [errors.DB_ERROR("database connection issue")]);
-                }
-                // Malformed Cypher Query
-                else if (err.neo4j) {
-                    if (err.neo4j.code && err.neo4j.code == "Neo.ClientError.Statement.InvalidSyntax") {
-                        return yield geocache.invalidPost(pre, [errors.DB_ERROR("malformed query")]);
-                    } else {
-                        return yield geocache.invalidPost(pre, [errors.DB_ERROR("neo4j error")]);
-                    }
-                } else {
-                    // Unknown Error
-                    if (err.success !== undefined) {
-                        return yield geocache.invalidPost(pre, err.errors);
-                    } else {
-                        return yield geocache.invalidPost(pre, [errors.UNKNOWN_ERROR("loggin in admin --- " + err)]);
-                    }
-                }
+                return yield geocache.invalidPost(pre, [errors.UNKNOWN_ERROR("geocache --- " + err)]);
             };
         }
     }

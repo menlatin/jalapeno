@@ -119,11 +119,7 @@ module.exports = function UserLogin(db, bcrypt, fs, jwt, parse, errors, validate
                             var claims = {
                                 iss: "digeocache",
                                 username: userToCompare.username,
-                                user: true,
-                                pri: {
-                                    user: ["create", "read", "update", "delete"],
-                                    user: ["create", "read", "update", "delete"]
-                                }
+                                user: true
                             };
                             var token = jwt.sign(claims, privateKey, {
                                 algorithm: 'RS256',

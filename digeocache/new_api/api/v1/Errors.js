@@ -31,10 +31,10 @@ module.exports = function Errors() {
                 message: "Unauthorized to view this resource."
             };
         },
-        UNPRIVILEGED: function() {
+        UNPRIVILEGED: function(user) {
             return {
                 code: 1002,
-                message: "Unprivileged to view this resource."
+                message: user+" unprivileged to access this resource."
             };
         },
         UNSUPPORTED: function() {

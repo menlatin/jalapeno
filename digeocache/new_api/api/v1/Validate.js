@@ -26,7 +26,8 @@ module.exports = function Validate(errors) {
     var moment = require('moment');
 
     var adminValidate = require('./admin/AdminValidate.js')();
-    var userValidate = require('./user/userValidate.js')();
+    var userValidate = require('./user/UserValidate.js')();
+    var geocacheValidate = require('./geocache/geocacheValidate.js')();
 
     var validate = {
         isEmpty: function isEmpty(data) {
@@ -217,6 +218,38 @@ module.exports = function Validate(errors) {
                 }
             };
         },
+        bool: function() {
+            return function(attribute, value) {
+                if(_.isBoolean(value)) {
+                    return {
+                        valid: true,
+                        data: value
+                    }
+                }
+                else {
+                    return {
+                        valid: false,
+                        errors: [errors.ATTRIBUTE_INVALID(attribute)]
+                    };
+                }
+            };
+        },
+        doubleRange: function(range) {
+            return function(attribute, value) {
+                if(_.isFinite(value) && ((value >= range.min) || (value <= range.max))) {
+                    return {
+                        valid: true,
+                        data: value
+                    }
+                }
+                else {
+                    return {
+                        valid: false,
+                        errors: [errors.ATTRIBUTE_INVALID(attribute)]
+                    }
+                }
+            };
+        },
         dateRange: function(range) {
             return function(attribute, value) {
                 var date = moment(value, "YYYY-MM-DDTHH:mm:ss.SSSZ", true);
@@ -246,6 +279,7 @@ module.exports = function Validate(errors) {
     // Merge Database Utility Functions for Models
     _.merge(validate, adminValidate);
     _.merge(validate, userValidate);
+    _.merge(validate, geocacheValidate);
 
     return validate;
 };

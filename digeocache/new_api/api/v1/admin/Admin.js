@@ -115,10 +115,14 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                 var admin_test = validate.schema(admin.schema, admin_pre);
                 if (admin_test.valid) {
                     // Check if username / email already in use
+                    var takenErrors = [];
+                    var isTaken = false;
                     var checkUsername = yield db.admin_username_taken(admin_test.data.username);
                     if (checkUsername.success) {
                         if (checkUsername.taken) {
-                            return yield admin.invalidPost(admin_pre, [errors.USERNAME_TAKEN("username")]);
+                            isTaken = true;
+                            takenErrors.push(errors.USERNAME_TAKEN("username"));
+                            // return yield admin.invalidPost(admin_pre, [errors.USERNAME_TAKEN("username")]);
                         }
                     } else {
                         return yield admin.invalidPost(admin_pre, checkUsername.errors);
@@ -126,10 +130,16 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                     var checkEmail = yield db.admin_email_taken(admin_test.data.email);
                     if (checkEmail.success) {
                         if (checkEmail.taken) {
-                            return yield admin.invalidPost(admin_pre, [errors.EMAIL_TAKEN("email")]);
+                            isTaken = true;
+                            takenErrors.push(errors.EMAIL_TAKEN("email"));
+                            // return yield admin.invalidPost(admin_pre, [errors.EMAIL_TAKEN("email")]);
                         }
                     } else {
                         return yield admin.invalidPost(admin_pre, checkEmail.errors);
+                    }
+
+                    if(isTaken) {
+                        return yield admin.invalidPost(admin_pre, takenErrors);
                     }
 
                     // Generate salt/hash using bcrypt
@@ -346,25 +356,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
         },
         catchErrors: function(err, pre) {
             return function * (next) {
-                // Database Connectivity Issue
-                if (err.code == "ECONNREFUSED") {
-                    return yield admin.invalidPost(pre, [errors.DB_ERROR("database connection issue")]);
-                }
-                // Malformed Cypher Query
-                else if (err.neo4j) {
-                    if (err.neo4j.code && err.neo4j.code == "Neo.ClientError.Statement.InvalidSyntax") {
-                        return yield admin.invalidPost(pre, [errors.DB_ERROR("malformed query")]);
-                    } else {
-                        return yield admin.invalidPost(pre, [errors.DB_ERROR("neo4j error")]);
-                    }
-                } else {
-                    // Unknown Error
-                    if (err.success !== undefined) {
-                        return yield admin.invalidPost(pre, err.errors);
-                    } else {
-                        return yield admin.invalidPost(pre, [errors.UNKNOWN_ERROR("admin --- " + err)]);
-                    }
-                }
+                return yield admin.invalidPost(pre, [errors.UNKNOWN_ERROR("admin --- " + err)]);
             };
         }
     }

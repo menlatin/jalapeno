@@ -52,43 +52,61 @@ module.exports = function Errors() {
         /*
             Database Errors
         */
-        DB_ERROR: function(context) {
+        NEO4J_ERROR: function(ctx) {
             return {
                 code: 2001,
-                message: "DB query error: " + context
+                message: "Neo4j error" + ((ctx) ? ": "+ctx : "")
             }
         },
-        DB_EMPTY_RESULT: function() {
+        NEO4J_CONNECTION_ISSUE: function() {
             return {
                 code: 2002,
-                message: "DB query result was empty"
+                message: "Neo4j connection issue"
             }
         },
-        DB_EXPECTED_RESULT: function() {
+        NEO4J_MALFORMED_QUERY: function() {
             return {
-                code: 2004,
-                message: "DB query response expected one or more results"
+                code: 2003,
+                message: "Neo4j malformed query"
             }
         },
-        DB_EXPECTED_ONE_RESULT: function() {
+        NEO4J_CONSTRAINT_VIOLATION: function() {
+            return {
+                code:2004,
+                message: "Neo4j constraint violation"
+            }
+        },
+        NEO4J_EMPTY_RESULT: function() {
             return {
                 code: 2005,
-                message: "DB query response expected only one result and found many"
+                message: "Neo4j query result was empty"
             }
         },
-        DB_UNDEFINED_RESULT: function() {
+        NEO4J_EXPECTED_RESULT: function() {
             return {
                 code: 2006,
-                message: "DB query result was undefined"
+                message: "Neo4j query response expected one or more results"
+            }
+        },
+        NEO4J_EXPECTED_ONE_RESULT: function() {
+            return {
+                code: 2007,
+                message: "Neo4j query response expected only one result and found many"
+            }
+        },
+        NEO4J_UNDEFINED_RESULT: function() {
+            return {
+                code: 2008,
+                message: "Neo4j query result was undefined"
             }
         },
         /*
             Validation Errors
         */
-        LOGIN_FAILURE: function() {
+        LOGIN_FAILURE: function(ctx) {
             return {
                 code: 3001,
-                message: "bad credentials"
+                message: "bad credentials ::: "+ctx
             };
         },
         UNIDENTIFIABLE: function(id) {

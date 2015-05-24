@@ -76,7 +76,7 @@ module.exports = function AdminLogin(db, bcrypt, fs, jwt, parse, errors, validat
                     // See if this username or email exists in the admin database
                     var adminToCompare = null;
                     if (isEmailAsUsername) {
-                        var adminByEmail = yield db.admin_by_email_for_login(login_test.data.email);
+                        var adminByEmail = yield db.admin_by_email_for_login(login_test.data.username);
                         if (adminByEmail.success) {
                             if (adminByEmail.data.length == 0) {
                                 // Email not found (only return generic login failure error for security purposes)
@@ -92,12 +92,12 @@ module.exports = function AdminLogin(db, bcrypt, fs, jwt, parse, errors, validat
                         if (adminByUsername.success) {
                             if (adminByUsername.data.length == 0) {
                                 // Username not found (only return generic login failure error for security purposes)
-                                return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE()]);
+                                return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE("username not found")]);
                             } else {
                                 adminToCompare = adminByUsername.data;
                             }
                         } else {
-                            return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE()]);
+                            return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE("invalid field values")]);
                         }
                     }
 
@@ -134,11 +134,11 @@ module.exports = function AdminLogin(db, bcrypt, fs, jwt, parse, errors, validat
                             });
                         } else {
                             // Failed to Update Last Login Date When Logging In
-                            return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE()]);
+                            return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE("failed to update login_on")]);
                         }
                     } else {
                         // Password incorrect (only return generic login failure error for security purposes)
-                        return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE()]);
+                        return yield adminLogin.invalidPost(login_pre, [errors.LOGIN_FAILURE("password incorrect")]);
                     }
 
                 } else {
@@ -153,21 +153,23 @@ module.exports = function AdminLogin(db, bcrypt, fs, jwt, parse, errors, validat
             return function * (next) {
                 // Database Connectivity Issue
                 if (err.code == "ECONNREFUSED") {
-                    return yield adminLogin.invalidPost(pre, [errors.DB_ERROR("database connection issue")]);
+                    return yield adminLogin.invalidPost(pre, [errors.NEO4J_CONNECTION_ISSUE()]);
                 }
                 // Malformed Cypher Query
                 else if (err.neo4j) {
                     if (err.neo4j.code && err.neo4j.code == "Neo.ClientError.Statement.InvalidSyntax") {
-                        return yield adminLogin.invalidPost(pre, [errors.DB_ERROR("malformed query")]);
+                        return yield adminLogin.invalidPost(pre, [errors.NEO4J_MALFORMED_QUERY()]);
+                    } else if (err.neo4j.code && err.neo4j.code == "Neo.ClientError.Schema.ConstraintViolation") {
+                        return yield adminLogin.invalidPost(pre, [errors.NEO4J_CONSTRAINT_VIOLATION()]);
                     } else {
-                        return yield adminLogin.invalidPost(pre, [errors.DB_ERROR("neo4j error")]);
+                        return yield adminLogin.invalidPost(pre, [errors.NEO4J_ERROR()]);
                     }
                 } else {
                     // Unknown Error
                     if (err.success !== undefined) {
                         return yield adminLogin.invalidPost(pre, err.errors);
                     } else {
-                        return yield adminLogin.invalidPost(pre, [errors.UNKNOWN_ERROR("logging in admin --- " + err)]);
+                        return yield adminLogin.invalidPost(pre, [errors.UNKNOWN_ERROR("adminLogin --- " + err)]);
                     }
                 }
             };

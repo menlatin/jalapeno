@@ -32,11 +32,11 @@ module.exports = function DB(config) {
 
             if (!results) {
                 response.success = false;
-                response.errors = [errors.DB_UNDEFINED_RESULT()];
+                response.errors = [errors.NEO4J_UNDEFINED_RESULT()];
                 deferred.reject(response);
             } else if (results.length > 1) {
                 response.success = false;
-                response.errors = [errors.DB_EXPECTED_ONE_RESULT()];
+                response.errors = [errors.NEO4J_EXPECTED_ONE_RESULT()];
                 deferred.reject(response);
             } else {
                 response.success = true;
@@ -54,11 +54,11 @@ module.exports = function DB(config) {
             var deferred = Q.defer();
             if (!results) {
                 response.success = false;
-                response.errors = [errors.DB_UNDEFINED_RESULT()];
+                response.errors = [errors.NEO4J_UNDEFINED_RESULT()];
                 deferred.reject(response);
             } else if (results.length == 0) {
                 response.success = false;
-                response.errors = [errors.DB_EXPECTED_RESULT()];
+                response.errors = [errors.NEO4J_EXPECTED_RESULT()];
                 deferred.reject(response);
             } else {
                 response.success = true;
@@ -72,7 +72,7 @@ module.exports = function DB(config) {
             var deferred = Q.defer();
             if (!results) {
                 response.success = false;
-                response.errors = [errors.DB_UNDEFINED_RESULT()];
+                response.errors = [errors.NEO4J_UNDEFINED_RESULT()];
                 deferred.reject(response);
             } else if (results.length > 0) {
                 response.success = true;
@@ -84,7 +84,7 @@ module.exports = function DB(config) {
                 deferred.resolve(response);
             } else {
                 response.success = false;
-                response.errors = [errors.DB_ERROR("unknown DB error")];
+                response.errors = [errors.NEO4J_ERROR()];
                 deferred.reject(response);
             }
             return deferred.promise;
@@ -94,11 +94,11 @@ module.exports = function DB(config) {
             var deferred = Q.defer();
             if (!results) {
                 response.success = false;
-                response.errors = [errors.DB_UNDEFINED_RESULT()];
+                response.errors = [errors.NEO4J_UNDEFINED_RESULT()];
                 deferred.reject(response);
             } else if (results.length == 0) {
                 response.success = false;
-                response.errors = [errors.DB_EMPTY_RESULT()];
+                response.errors = [errors.NEO4J_EMPTY_RESULT()];
                 deferred.reject(response);
             } else {
                 response.success = true;
@@ -112,7 +112,7 @@ module.exports = function DB(config) {
             var deferred = Q.defer();
             if (!results) {
                 response.success = false;
-                response.errors = [errors.DB_UNDEFINED_RESULT()];
+                response.errors = [errors.NEO4J_UNDEFINED_RESULT()];
                 deferred.reject(response);
             } else {
                 if (results.length == 0) {
@@ -126,11 +126,32 @@ module.exports = function DB(config) {
             }
             return deferred.promise;
         },
-        error: function(error) {
+        error: function(err) {
             var response = {};
             var deferred = Q.defer();
             response.success = false;
-            response.errors = [errors.DB_ERROR(error)];
+
+            // Database Connectivity Issue
+            if (err.code == "ECONNREFUSED") {
+                response.errors = [errors.NEO4J_CONNECTION_ISSUE()];
+            }
+            // Malformed Cypher Query
+            else if (err.neo4j) {
+                if (err.neo4j.code && err.neo4j.code == "Neo.ClientError.Statement.InvalidSyntax") {
+                    response.errors = [errors.NEO4J_MALFORMED_QUERY()];
+                } else if (err.neo4j.code && err.neo4j.code == "Neo.ClientError.Schema.ConstraintViolation") {
+                    response.errors = [errors.NEO4J_CONSTRAINT_VIOLATION()];
+                } else if (err.neo4j.code) {
+                    //console.log(err.neo4j.message)
+                    response.errors = [errors.NEO4J_ERROR(err.neo4j.code)];
+                } else {
+                    response.errors = [errors.NEO4J_ERROR()];
+                }
+            } else {
+                // Unknown Error
+                response.errors = [errors.UNKNOWN_ERROR("Database --- " + err)]
+            }
+
             deferred.reject(response);
             return deferred.promise;
         }

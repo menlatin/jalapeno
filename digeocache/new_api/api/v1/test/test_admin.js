@@ -25,114 +25,248 @@ var test = require('./test.js');
 var _ = require('lodash');
 var co = require('co');
 var bcrypt = require('co-bcrypt');
+var jwt = require('koa-jwt');
+var fs = require('fs');
 
-var testAdminArray = require('./data_test_admin.js');
+// Public Key Used for JWT Verification
+var publicKey = fs.readFileSync('api/v1/auth/ssl/demo.rsa.pub');
 
-var cleanAdmin = function(testAdmin) {
-    co(function * () {
-        // Deep clone test admin reference
-        var admin = _.clone(testAdmin, true);
+var testData = require('./data_test_admin.js');
 
-        var del = yield test.db.admin_delete_by_username(admin.username);;
-        var salt = yield bcrypt.genSalt(10);
-        var hash = yield bcrypt.hash(admin.password, salt);
+var deleteAdmin = function * (testAdmin) {
+    // Deep clone test admin reference
+    var admin = _.clone(testAdmin, true);
+    return test.db.admin_delete_by_username(admin.username);
+};
 
-        // Delete password key/value from post object, replace w/hash
-        delete admin.password;
-        admin.hash = hash;
+var createAdmin = function * (testAdmin) {
+    // Deep clone test admin reference
+    var admin = _.clone(testAdmin, true);
 
-        // Add automatic date fields
-        var now = new Date();
-        admin.created_on = now;
-        admin.updated_on = now;
-        admin.login_on = "";
+    var salt = yield bcrypt.genSalt(10);
+    var hash = yield bcrypt.hash(admin.password, salt);
 
-        var created = yield test.db.admin_create(admin);
-    });
+    // Delete password key/value from post object, replace w/hash
+    delete admin.password;
+    admin.hash = hash;
+
+    // Add automatic date fields
+    var now = new Date();
+    admin.created_on = now;
+    admin.updated_on = now;
+    admin.login_on = "";
+
+    return test.db.admin_create(admin);
 }
 
-var authenticateAdmin = function(testAdmin) {
-    co(function * () {
-        // Deep clone test admin reference
-        var admin = _.clone(testAdmin, true);
-        var login = {
-            username: admin.username,
-            password: admin.password
+var printErrors = function(errors) {
+    if (errors) {
+        return JSON.stringify(errors, null, '\t') + "\n";
+    } else {
+        return "no errors found";
+    }
+}
+
+var checkAdminCreate = function(createResponses) {
+    test.expect(createResponses).to.be.an('array');
+    for (var index in createResponses) {
+        var response = createResponses[index];
+        test.expect(response.success).to.equal(true);
+        checkAdminData(response.data);
+    }
+}
+
+var checkAdminDelete = function(deleteResponses) {
+    test.expect(deleteResponses).to.be.an('array');
+    for (var index in deleteResponses) {
+        var response = deleteResponses[index];
+        test.expect(response.success).to.exist;
+        test.expect(response.success).to.equal(true);
+        test.expect(response.affected).to.exist;
+        test.expect(response.affected).to.be.within(0, 1);
+        test.expect(response.ids).to.exist;
+        test.expect(response.ids).to.be.an('array');
+        test.expect(response.ids).to.have.length(response.affected);
+    }
+}
+
+var checkAdminData = function(data) {
+    test.expect(data).to.be.an('object');
+    test.expect(data.id).to.exist;
+    test.expect(data.username).to.not.equal('');
+    test.expect(data.email).to.not.equal('');
+    test.expect(data.created_on).to.exist;
+    test.expect(data.updated_on).to_exist;
+    test.expect(data.login_on).to.equal('');
+}
+
+var checkAdminErrors = function(errors) {
+    test.expect(errors, "Errors in response:\n" + printErrors(errors)).to.not.exist;
+}
+
+var verifyAdminToken = function(data) {
+    test.expect(data).to.be.an('object');
+    test.expect(data.token).to.exist;
+    test.expect(data.token).to.not.equal('');
+    // verify a token symmetric - synchronous
+    var decoded = jwt.verify(data.token, publicKey);
+    test.expect(decoded.username).to.exist; // expect "username" in token claim
+    test.expect(decoded.admin).to.be.true; // expect "admin" in token claim to be true
+    test.expect(decoded.iat).to.exist; // expect "issued-at" timestamp in token claim
+    test.expect(decoded.exp).to.exist; // expect "expiration" timestamp in token claim
+    return data.token;
+}
+
+// var postAdmin = function(testAdmin) {
+//     // co(function * () {
+//     it('should create valid and unique admin for username = ' + testAdmin.username, function * () {
+
+//         // Deep clone test admin reference
+//         var admin = _.clone(testAdmin, true);
+//         var response = yield test.request.post('/api/v1/admin').send(admin).expect(200).end();
+//         checkAdminErrors(response.body.errors);
+//         checkAdminData(response.body.data);
+//         // Check For Uniqueness
+//         // console.log("DID I GET HERE? = ", response.body);
+
+//         var uniqueUsername = yield test.db.admin_by_username(response.body.data.username);
+//         console.log('uniqeU = ', uniqueUsername);
+//         expect(uniqueUsername.success).to.equal(true);
+//         checkAdminData(uniqueUsername.data);
+
+//         var uniqueEmail = yield test.db.admin_by_email(response.body.data.email);
+//         expect(uniqueEmail.success).to.equal(true);
+//         checkAdminData(uniqueEmail.data);
+//     });
+// }
+
+var createBaseline = co.wrap(function * (baseline) {
+    var creates = [];
+    for (var index in baseline) {
+        var admin = baseline[index];
+        var create = yield * createAdmin(admin);
+        creates.push(create);
+    }
+    return yield Promise.all(creates);
+});
+
+var deleteBaseline = co.wrap(function * (baseline) {
+    var deletes = [];
+    for (var admin in baseline) {
+        var del = yield * deleteAdmin(baseline[admin]);
+        deletes.push(del);
+    }
+    return yield Promise.all(deletes);
+});
+
+var authAdmin = function(t) {
+    it('should ' + t.should, function * () {
+        var response = yield test.request.post(t.endpoint).send(t.payload).expect(t.expect).end();
+
+        // Positive Test Case Expects No Errors
+        if (t.errors == undefined) {
+            checkAdminErrors(response.body.errors);
+            verifyAdminToken(response.body.data);
         }
-        var response = yield test.request.post('/api/v1/auth/admin').send(login).expect(200).end();
-        test.checkErrors(response.body.errors);
-        test.verifyAdminToken(response.body.data);
+        // Negative Test Cases Looking For Specific Errors
+        else {
+            test.expectErrors(response.body.errors, t.errors);
+        }
     });
 }
 
-var postAdmin = function(testAdmin) {
-    co(function * () {
-        // Deep clone test admin reference
-        var admin = _.clone(testAdmin, true);
-        var response = yield test.request.post('/api/v1/admin').send(admin).expect(200).end();
-        test.checkErrors(response.body.errors);
-        test.checkData(response.body.data);
-        // Check For Uniqueness
-                                // console.log("DID I GET HERE? = ", response.body);
+var postAdmin = function(t) {
+    it('should ' + t.should, function * () {
+        var response = yield test.request.post(t.endpoint).send(t.payload).expect(t.expect).end();
 
-        var uniqueUsername = yield test.db.admin_by_username(response.body.data.username);
-        console.log('uniqeU = ', uniqueUsername);
-        test.expect(uniqueUsername.success).to.equal(true);
-        test.checkData(uniqueUsername.data);
-
-        var uniqueEmail = yield test.db.admin_by_email(response.body.data.email);
-        test.expect(uniqueEmail.success).to.equal(true);
-        test.checkData(uniqueEmail.data);
+        // Positive Test Case Expects No Errors
+        if (t.errors == undefined) {
+            checkAdminErrors(response.body.errors);
+            checkAdminData(response.body.data);
+        }
+        // Negative Test Cases Looking For Specific Errors
+        else {
+            test.expectErrors(response.body.errors, t.errors);
+        }
     });
 }
+
 
 /* 
 	   API Endpoint Tests for Admin
 */
-describe('ADMIN TESTS', function() {
-
-    beforeEach(function(done) {
-        _.forEach(testAdminArray, cleanAdmin);
-        done();
-    });
-    afterEach(function(done) {
-        _.forEach(testAdminArray, cleanAdmin);
-        done();
-    });
-
-    describe('POST /api/v1/auth/admin', function() {
-
-        it('should authenticate admins with valid username/password', function * () {
-            _.forEach(testAdminArray, authenticateAdmin);
-        });
-
-        // it('should authenticate with valid email/password', function * () {
-        //     // Use email in place of username ("@" should be auto-detected and validated as email)
-        //     adminLogin.username = "test_admin@digeocache.com";
-        //     var response = yield test.request.post('/api/v1/auth/admin').send(adminLogin).end();
-        //     test.checkErrors(response);
-        //     test.verifyAdminToken(response);
-        // });
-
-        // it('should fail authentication with incorrect password', function * () {
-        //     adminLogin.password = "Hello4321";
-        //     var response = yield test.request.post('/api/v1/auth/admin').send(adminLogin).end();
-        //     test.expectErrors(response, [test.errors.login.PASSWORD_INCORRECT('password')]);
-        // });
-
-        // it('should fail authentication with invalid username and password', function * () {
-        //     adminLogin.username = "invali^U$eNam[";
-        //     adminLogin.password = "~";
-        //     var response = yield test.request.post('/api/v1/auth/admin').send(adminLogin).end();
-        //     test.expectErrors(response, [test.errors.user.USERNAME_INVALID('username'), test.errors.user.PASSWORD_INVALID('password')]);
-        // });
+describe('Admin Authentication Tests', function() {
+    before(function(done) {
+        console.log("\t1. baselining db");
+        deleteBaseline(testData.auth.baseline).
+        then(
+            deleteResponses => {
+                checkAdminDelete(deleteResponses);
+                return createBaseline(testData.auth.baseline);
+            },
+            error => {
+                return createBaseline(testData.auth.baseline);
+            }
+        ).then(
+            createResponses => {
+                checkAdminCreate(createResponses);
+                console.log("\t2. successfully created baseline");
+                done();
+            },
+            error => {
+                checkAdminErrors(error);
+                console.log("\t2. * errors creating new baseline");
+                done();
+            }
+        );
     });
 
-    describe('POST /api/v1/admin', function() {
-        it('should create valid and unique admin objects', function * () {
-            _.forEach(testAdminArray, postAdmin);
-        });
+    // Authentication "shoulds" Magic
+    _.forEach(testData.auth.tests, authAdmin);
+});
+
+describe('Admin POST Tests', function() {
+    before(function(done) {
+        console.log("\t1. baselining db");
+        // Deep clone baseline so we can delete zombie node
+        // from last positive POST case run
+        var baselinePlusZombie = _.clone(testData.post.baseline, true);
+        baselinePlusZombie.push(testData.post.tests[0].payload);
+
+        deleteBaseline(baselinePlusZombie).
+        then(
+            deleteResponses => {
+                checkAdminDelete(deleteResponses);
+                return createBaseline(testData.post.baseline);
+            },
+            error => {
+                return createBaseline(testData.post.baseline);
+            }
+        ).then(
+            createResponses => {
+                checkAdminCreate(createResponses);
+                console.log("\t2. successfully created baseline");
+                done();
+            },
+            error => {
+                checkAdminErrors(error);
+                console.log("\t2. * errors creating new baseline");
+                done();
+            }
+        );
     });
+
+    // POST "shoulds" Magic
+    _.forEach(testData.post.tests, postAdmin);
+
+
+    // describe('POST /api/v1/auth/admin', function() {
+
+    // describe('POST /api/v1/admin', function() {
+    //     it('should create valid and unique admin objects', function * () {
+    //         _.forEach(testAdminArray, postAdmin);
+    //     });
+    // });
 
     // describe('GET /api/v1/admin', function() {
 

@@ -81,10 +81,8 @@ gulp.task('mocha', function() {
                     console.log("gulp 'mocha' task error: ", err.toString());
                     this.emit('end'); // Gracefully continue without exiting process if test fails
                 });
-
-
         },
-        1000);
+        2000);
 });
 
 gulp.task('test-once', function() {

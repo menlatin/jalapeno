@@ -55,7 +55,7 @@ module.exports = function V1() {
 
     // Development Switches
     if (app.env === 'development') {
-        console.log("NODE_ENV = 'development'");
+        // console.log("NODE_ENV = 'development'");
         // Use Development Logger
         // app.use(logger());
         // Use Error Handler

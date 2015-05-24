@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utility) {
+module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utility, _) {
 
     var admin = {
         schema: [{
@@ -122,7 +122,6 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                         if (checkUsername.taken) {
                             isTaken = true;
                             takenErrors.push(errors.USERNAME_TAKEN("username"));
-                            // return yield admin.invalidPost(admin_pre, [errors.USERNAME_TAKEN("username")]);
                         }
                     } else {
                         return yield admin.invalidPost(admin_pre, checkUsername.errors);
@@ -132,7 +131,6 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                         if (checkEmail.taken) {
                             isTaken = true;
                             takenErrors.push(errors.EMAIL_TAKEN("email"));
-                            // return yield admin.invalidPost(admin_pre, [errors.EMAIL_TAKEN("email")]);
                         }
                     } else {
                         return yield admin.invalidPost(admin_pre, checkEmail.errors);
@@ -178,7 +176,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                 // TODO: Be sure this is being requested by authenticated admin w/proper privileges
 
                 // No parameter provided in URL
-                if (this.params.id == undefined && this.params.id == null) {
+                if ((this.params.id == undefined || this.params.id == null) && _.isEmpty(this.query)) {
                     // Return all admins      
                     var allAdmins = yield db.admins_all();
                     if (allAdmins.success) {
@@ -349,7 +347,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                     }
                 } else {
                     response.success = false;
-                    response.errors = [errors.admin.UNIDENTIFIABLE(params_id)];
+                    response.errors = [errors.UNIDENTIFIABLE(params_id)];
                     return response;
                 }
             };

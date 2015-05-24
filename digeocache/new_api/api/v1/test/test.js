@@ -37,6 +37,8 @@ var test = {
     assert: assert,
     expectErrors: function(errors, expected) {
         expect(errors, "Expected error to exist in response, but none found!").to.exist;
+        expect(errors, "Error in response should always be an array.").to.be.an('array');
+        expect(errors, "Expected errors in test data should be an array.").to.be.an('array');
         expected.forEach(function(expectedError) {
             var found = _.findWhere(errors, {
                 code: expectedError.code

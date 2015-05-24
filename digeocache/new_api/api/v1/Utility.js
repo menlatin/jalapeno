@@ -56,14 +56,14 @@ module.exports = function Utility(errors) {
                 }
             },
             unauthorized: function * (next) {
-                var json = utility.json_response(null, errors.UNAUTHORIZED());
+                var json = utility.json_response(null, [errors.UNAUTHORIZED()]);
                 this.type = "application/json";
                 this.status = 401;
                 this.body = json;
             },
             unprivileged: function * (next) {
             	console.log("GOT HEREEEEEEEE");
-                var json = utility.json_response(null, errors.UNPRIVILEGED());
+                var json = utility.json_response(null, [errors.UNPRIVILEGED()]);
                 this.type = "application/json";
                 this.status = 401;
                 this.body = json;

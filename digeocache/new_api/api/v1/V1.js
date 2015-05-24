@@ -79,7 +79,7 @@ module.exports = function V1() {
     var validate = new Validate(errors);
 
     var adminLogin = new AdminLogin(db, bcrypt, fs, jwt, parse, errors, validate, utility);
-    var admin = new Admin(db, bcrypt, parse, errors, validate, jwt, utility);
+    var admin = new Admin(db, bcrypt, parse, errors, validate, jwt, utility, _);
 
     var userLogin = new UserLogin(db, bcrypt, fs, jwt, parse, errors, validate, utility);
     var user = new User(db, bcrypt, parse, errors, validate, jwt, utility);

@@ -244,8 +244,138 @@ data.get.tests[5] = {
     errors: [errors.UNIDENTIFIABLE()]
 };
 
+data.put.baseline = [];
+data.put.baseline[0] = {
+    username: "test_put_admin1",
+    password: "test_put_admin_password1",
+    firstname: "TestPut",
+    lastname: "Admin1",
+    email: "test_put_admin1@gmail.com",
+    birthday: "1969-12-31T06:00:00.000Z",
+    phone: "5558675309"
+};
+data.put.tests = [];
+data.put.tests[0] = {
+    should: "fail without valid authorization header",
+    endpoint: "/api/v1/admin/test_put_admin1",
+    credentials: undefined,
+    payload: {
+        firstname: "TestPutNewNameNotLoggedIn"
+    },
+    expect: 401,
+    errors: [errors.UNAUTHORIZED()]
+};
+data.put.tests[1] = {
+    should: "update allowable admin properties using username with valid authorization header",
+    endpoint: "/api/v1/admin/test_put_admin1",
+    credentials: {
+        username: "test_put_admin1",
+        password: "test_put_admin_password1"
+    },
+    payload: {
+        firstname: "TestPutUsingUsername",
+        lastname: "Admin1Forever1"
+    },
+    expect: 200,
+    errors: undefined
+};
+data.put.tests[2] = {
+    should: "update allowable admin properties using email with valid authorization header",
+    endpoint: "/api/v1/admin/test_put_admin1@gmail.com",
+    credentials: {
+        username: "test_put_admin1",
+        password: "test_put_admin_password1"
+    },
+    payload: {
+        firstname: "TestPutUsingEmail",
+        lastname: "Admin1Forever2"
+    },
+    expect: 200,
+    errors: undefined
+};
+data.put.tests[3] = {
+    should: "update allowable admin properties using id with valid authorization header",
+    endpoint: "/api/v1/admin/:id",
+    credentials: {
+        username: "test_put_admin1",
+        password: "test_put_admin_password1"
+    },
+    payload: {
+        firstname: "TestPutUsingID",
+        lastname: "Admin1Forever3"
+    },
+    expect: 200,
+    errors: undefined
+};
+data.put.tests[4] = {
+    should: "fail to update allowable admin properties if identified improperly with valid authorization header",
+    endpoint: "/api/v1/admin/?x42z",
+    credentials: {
+        username: "test_put_admin1",
+        password: "test_put_admin_password1"
+    },
+    payload: {
+        firstname: "TestPutUsingBadID",
+        lastname: "Admin1Forever4"
+    },
+    expect: 200,
+    errors: [errors.UNIDENTIFIABLE()]
+};
+data.put.tests[5] = {
+    should: "fail to update fields with invalid values",
+    endpoint: "/api/v1/admin/test_put_admin1",
+    credentials: {
+        username: "test_put_admin1",
+        password: "test_put_admin_password1"
+    },
+    payload: {
+        firstname: ".",
+        lastname: "!",
+        email: "totally",
+        birthday: "1869-12-31T06:00:00.000Z",
+        phone: "00<<"
+    },
+    expect: 200,
+    errors: [errors.ATTRIBUTE_INVALID()]
+};
 
-
-
+data.del.baseline = [];
+data.del.baseline[0] = {
+    username: "test_del_admin1",
+    password: "test_del_admin_password1",
+    firstname: "TestDel",
+    lastname: "Admin1",
+    email: "test_del_admin1@gmail.com",
+    birthday: "1969-12-31T06:00:00.000Z",
+    phone: "5558675309"
+};
+data.del.tests = [];
+data.del.tests[0] = {
+    should: "fail without valid authorization header",
+    endpoint: "/api/v1/admin/test_del_admin1",
+    credentials: undefined,
+    expect: 401,
+    errors: [errors.UNAUTHORIZED()]
+};
+data.del.tests[1] = {
+    should: "fail when identified improperly with valid authorization header",
+    endpoint: "/api/v1/admin/$43",
+    credentials: {
+        username: "test_del_admin1",
+        password: "test_del_admin_password1"
+    },
+    expect: 200,
+    errors: [errors.UNIDENTIFIABLE()]
+};
+data.del.tests[2] = {
+    should: "delete admin identified by username with valid authorization header",
+    endpoint: "/api/v1/admin/test_del_admin1",
+    credentials: {
+        username: "test_del_admin1",
+        password: "test_del_admin_password1"
+    },
+    expect: 200,
+    errors: undefined
+};
 
 module.exports = data;

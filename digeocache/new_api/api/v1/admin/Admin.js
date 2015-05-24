@@ -209,7 +209,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                 var admin_pre = yield parse(this);
 
                 // No parameter provided in URL
-                if (this.params.id == undefined && this.params.id == null) {
+                if ((this.params.id == undefined && this.params.id == null) && _.isEmpty(this.query)) {
                     // Perhaps request is for a batch update
                     // batch_test = validate.schemaForBatchUpdate(admin.schema, admin_pre);
                     // if (batch_test.valid) {

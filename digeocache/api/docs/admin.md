@@ -15,12 +15,12 @@
 #### Request Example
 ```json
 {
-	"username": "test_admin"
-	"password": "test_admin_password1"
-	"firstname": "Test"
-	"lastname": "Admin"
-	"email": "test_admin@digeocache.com"
-	"birthday": "1969-12-31T06:00:00.000Z"
+	"username": "test_admin",
+	"password": "test_admin_password1",
+	"firstname": "Test",
+	"lastname": "Admin",
+	"email": "test_admin@digeocache.com",
+	"birthday": "1969-12-31T06:00:00.000Z",
 	"phone": "5558675309"
 }
 ```
@@ -201,7 +201,7 @@
 
 ### PUT Admin Batch
 
-* This functionality is not yet implemented *
+* This functionality is not yet implemented
 
 #### Failed Response Example
 ```json
@@ -246,9 +246,25 @@
 }
 ```
 
+#### Failed Response Example
+```json
+{
+    "data": {
+        "dne": "8675308"
+    },
+    "errors": [
+        {
+            "code": 3005,
+            "attribute": "dne",
+            "message": "dne invalid"
+        }
+    ]
+}
+```
+
 ### DELETE Admin Batch
 
-* This functionality is not yet implemented *
+* This functionality is not yet implemented
 
 #### Failed Response Example
 ```json

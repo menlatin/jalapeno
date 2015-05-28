@@ -3,11 +3,11 @@
 
 | Endpoint | Description |
 | ---- | --------------- |
-| [POST /api/v1/auth/admin/](#post-admin-login) | Request new admin
+| [POST /api/v1/auth/admin/](#POST-/api/v1/auth/admin/) | Request new admin
 | [POST /api/v1/auth/user/](#post-user-login) | Request admin list |
 | [GET /api/v1/auth/logout/](#get-logout) | Request bulk admin update  |
 
-### POST Admin Login
+### POST /api/v1/auth/admin/
 
 #### Request Example
 ```json

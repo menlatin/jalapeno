@@ -4,8 +4,8 @@ Super Secret Jalapeno Project
 ## diGeoCache
 ### Cryptocurrency-based game
 
-## [diGeoCache API](digeocache/api/readme.md)
+#### [diGeoCache API](jalapeno/blob/master/digeocache/api/README.md)
 
-## [diGeoCache Web](digeocache/web/readme.md)
+#### [diGeoCache Web](jalapeno/blob/master/digeocache/web/README.md)
 
-## [diGeoCache Mobile](digeocache/mobile/readme.md)
+#### [diGeoCache Mobile](jalapeno/blob/master/digeocache/mobile/README.md)

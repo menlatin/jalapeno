@@ -437,8 +437,11 @@ var createGeocacheBaseline = co.wrap(function * (baseline) {
     	var geocache = baseline[index].geocache;
     	var admin = baselin[index].admin;
     	var user = baseline[index].user;
-        if (geocache) {
-            creates.push(yield * createGeocache(geocache));
+        if (geocache && admin) {
+            creates.push(yield * createGeocacheAsAdmin(geocache));
+        }
+        if (geocache && user) {
+        	creates.push(yield * createGeocacheAsUser(geocache))
         }
         if (admin) {
         	creates.push(yield * createAdmin(admin));

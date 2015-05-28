@@ -66,7 +66,6 @@ geocacheData.post.tests[1] = {
     expect: 200,
     errors: undefined
 };
-
 geocacheData.post.tests[2] = {
     should: "create valid geocache for authenticated user",
     endpoint: "/api/v1/geocache/",
@@ -103,40 +102,25 @@ geocacheData.post.tests[3] = {
     expect: 200,
     errors: undefined
 };
-
-///////
-
-geocacheData.post.tests[1] = {
-    should: "fail to create valid but non-unique geocache object",
-    endpoint: "/api/v1/geocache",
-    payload: {
-        geocachename: "test_post_existing_geocache1",
-        password: "test_post_existing_geocache_password1",
-        firstname: "TestPost",
-        lastname: "ExistingGeocache1",
-        email: "test_post_existing_geocache1@gmail.com",
-        birthday: "1969-12-31T06:00:00.000Z",
-        phone: "5558675309"
-    },
-    expect: 200,
-    errors: [errors.USERNAME_TAKEN(), errors.EMAIL_TAKEN()]
-};
-geocacheData.post.tests[2] = {
+geocacheData.post.tests[4] = {
     should: "fail to create invalid geocache object",
-    endpoint: "/api/v1/geocache",
+    endpoint: "/api/v1/geocache/",
     payload: {
-        geocachename: "^*&@#@(",
-        password: ")))",
-        firstname: "<<<<",
-        lastname: ">>",
-        email: "notanemail",
-        birthday: "7&",
-        phone: "...",
-        fake: "this is not a valid field",
-    },
+        title: "@#(@",
+        message: 23.0,
+        lat: "x",
+        lng: -1098.5000,
+        currency: "NOTACRYPTOCURRENCY",
+        amount: 45000.32,
+        is_physical: "shouldbebool",
+        delay: 70000000
+    }
     expect: 200,
     errors: [errors.ATTRIBUTE_INVALID()]
 };
+
+///////
+
 
 geocacheData.get.baseline = [];
 geocacheData.get.baseline[0] = {

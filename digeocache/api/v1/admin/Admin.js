@@ -333,44 +333,45 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                     if (adminByID.success) {
                         response.success = true;
                         response.data = adminByID.data;
-                        return response;
                     } else {
                         response.success = false;
                         response.errors = adminByID.errors;
-                        return response;
                     }
                 } else if (username_test.valid) {
                     var adminByUsername = yield db.admin_by_username(username_test.data);
                     if (adminByUsername.success) {
                         response.success = true;
                         response.data = adminByUsername.data;
-                        return response;
                     } else {
                         response.success = false;
                         response.errors = adminByUsername.errors;
-                        return response;
                     }
                 } else if (email_test.valid) {
                     var adminByEmail = yield db.admin_by_email(email_test.data);
                     if (adminByEmail.success) {
                         response.success = true;
                         response.data = adminByEmail.data;
-                        return response;
                     } else {
                         response.success = false;
                         response.errors = adminByEmail.errors;
-                        return response;
                     }
                 } else {
                     response.success = false;
                     response.errors = [errors.UNIDENTIFIABLE(params_id)];
-                    return response;
                 }
+
+                // Need to be sure this gives back an admin and not empty array!
+                // Somehow we detected a valid id/username/email but still wasn't in DB
+                if(response.success == true && response.data.length == 0) {
+                    response.success = false;
+                    response.errors = [errors.UNIDENTIFIABLE(params_id)];
+                }
+                return response;
             };
         },
         catchErrors: function(err, pre) {
             return function * (next) {
-                return yield admin.invalidPost(pre, [errors.UNKNOWN_ERROR("admin --- " + err)]);
+                return yield admin.invalidPost(pre, [errors.UNKNOWN_ERROR("admin --- " + JSON.stringify(err))]);
             };
         }
     }

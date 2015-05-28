@@ -1,31 +1,297 @@
-### Derived Relationship Queries
+# Admin
 
-#### Mutual Friends
+| Endpoint | Description |
+| ---- | --------------- |
+| [POST /api/v1/admins/](#post-admin) | Request new admin
+| [GET /api/v1/admins/](#get-admin-list) | Request admin list |
+| [GET /api/v1/admins/:id](#get-admin-by-id) | Request admin with id |
+| [PUT /api/v1/admins/](#put-admin-batch) | Request bulk admin update  |
+| [PUT /api/v1/admins/:id](#put-admin-by-id) | Request admin edit with id |
+| [DELETE /api/v1/admins/](#delete-admin-batch) | Request bulk admin delete |
+| [DELETE /api/v1/admins/:id](#delete-admin-by-id) | Request admin delete with id |
 
-#### Dropped Geocaches
+### POST Admin
 
-#### Recent Activity (Feed)
+#### Request Example
+```json
+{
+	"username": "test_admin"
+	"password": "test_admin_password1"
+	"firstname": "Test"
+	"lastname": "Admin"
+	"email": "test_admin@digeocache.com"
+	"birthday": "1969-12-31T06:00:00.000Z"
+	"phone": "5558675309"
+}
+```
 
-#### Geocaches Dropped By Users Whose Product I Liked
+#### Success Response Example
+```json
+{
+    "data": {
+        "id": 89,
+        "username": "test_admin",
+        "firstname": "Test",
+        "lastname": "Admin",
+        "email": "test_admin@digeocache.com",
+        "birthday": "1969-12-31T06:00:00.000Z",
+        "phone": "5558675309",
+        "created_on": "2015-05-28T17:58:37.525Z",
+        "updated_on": "2015-05-28T17:58:37.525Z",
+        "login_on": ""
+    }
+}
+```
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin at varius lacus. Donec nec sollicitudin ex, malesuada auctor turpis. Sed eget scelerisque diam, quis finibus nunc. Vivamus posuere elementum varius. Aliquam finibus mollis mauris, sed posuere massa luctus ac. Vestibulum eget nibh eget ligula luctus aliquam. Donec imperdiet sit amet nunc ut fermentum. Sed ut euismod odio, a eleifend elit. Maecenas tempus aliquet interdum. Proin sodales cursus justo. Nulla pulvinar est sed vehicula dapibus. Suspendisse tincidunt auctor imperdiet.
+#### Failed Response Example
+```json
+{
+    "data": {
+        "username": "test_admin",
+        "firstname": "Test",
+        "lastname": "Admin",
+        "email": "test_admin@digeocache.com",
+        "birthday": "1969-12-31T06:00:00.000Z",
+        "phone": "5558675309"
+    },
+    "errors": [
+        {
+            "code": 3006,
+            "attribute": "username",
+            "message": "username taken"
+        },
+        {
+            "code": 3007,
+            "attribute": "email",
+            "message": "email taken"
+        }
+    ]
+}
+```
 
-Quisque cursus turpis sit amet volutpat tincidunt. Etiam ac elit libero. Mauris massa sem, molestie non congue sodales, lobortis a lectus. Quisque consectetur mi ac libero interdum faucibus. Ut quis faucibus nisl. Morbi condimentum a magna nec efficitur. Nunc et orci commodo, feugiat eros vel, tincidunt ante. Integer in tempus tellus. Mauris sem ex, auctor et porttitor eu, commodo et elit. Nunc eget imperdiet lorem. Maecenas finibus bibendum urna vitae dignissim. Nulla consectetur ullamcorper tempor. Donec fringilla, ex id gravida ultrices, justo ipsum imperdiet ligula, vitae egestas est velit eu quam. Integer iaculis urna tempor, laoreet mauris sed, tincidunt lorem.
+### GET Admin List
 
-Donec non erat at mi facilisis pellentesque. Mauris at dignissim diam. Nunc at nulla sed nulla imperdiet venenatis at eget nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam erat volutpat. Curabitur molestie nunc tortor, in mattis nibh semper sit amet. Nam gravida erat ac vestibulum ornare. Vestibulum vehicula molestie rhoncus. Nam et euismod metus.
+#### Success Response Example
+```json
+{
+    "data": [
+        {
+            "id": 76,
+            "username": "test_get_admin1",
+            "firstname": "TestGet",
+            "lastname": "Admin1",
+            "email": "test_get_admin1@gmail.com",
+            "birthday": "1969-12-31T06:00:00.000Z",
+            "phone": "5558675309",
+            "created_on": "2015-05-28T17:36:54.652Z",
+            "updated_on": "2015-05-28T17:36:54.652Z",
+            "login_on": "2015-05-28T17:36:55.544Z"
+        },
+        {
+            "id": 77,
+            "username": "test_get_admin2",
+            "firstname": "TestGet",
+            "lastname": "Admin2",
+            "email": "test_get_admin2@gmail.com",
+            "birthday": "1969-12-31T06:00:00.000Z",
+            "phone": "5558675309",
+            "created_on": "2015-05-28T17:36:54.745Z",
+            "updated_on": "2015-05-28T17:36:54.745Z",
+            "login_on": ""
+        },
+        {
+            "id": 78,
+            "username": "test_get_admin3",
+            "firstname": "TestGet",
+            "lastname": "Admin3",
+            "email": "test_get_admin3@gmail.com",
+            "birthday": "1969-12-31T06:00:00.000Z",
+            "phone": "5558675309",
+            "created_on": "2015-05-28T17:36:54.884Z",
+            "updated_on": "2015-05-28T17:36:54.884Z",
+            "login_on": "2015-05-28T17:58:18.319Z"
+        }
+    ]
+}
+```
 
-Proin ornare sed enim sed hendrerit. Interdum et malesuada fames ac ante ipsum primis in faucibus. Quisque nec erat tellus. Morbi a urna est. Praesent ac elit vitae turpis dapibus semper. Quisque sed varius mi. Aliquam sed ultricies felis. Aliquam erat volutpat. Morbi vestibulum et dui sit amet egestas. Morbi vel faucibus neque. Etiam pulvinar lorem nec est vehicula congue. Morbi ut enim placerat, venenatis diam a, mollis elit.
+#### Failed Response Example
+```json
+{
+    "errors": [
+        {
+            "code": 1001,
+            "message": "Unauthorized to view this resource."
+        }
+    ]
+}
+```
 
-Phasellus sagittis arcu a orci bibendum sagittis. Cras et ultrices tortor. Duis ac elit id augue blandit lacinia. Ut tempus, libero in malesuada condimentum, dolor quam sagittis dolor, vulputate auctor velit turpis vel augue. Quisque ultricies tempor turpis eu rutrum. Mauris et semper neque, vel lobortis sem. Duis porttitor tortor et sapien venenatis auctor. Sed non elementum justo, sed pharetra risus. Proin viverra nunc ac nulla feugiat suscipit.
+### GET Admin By ID
 
-# good
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin at varius lacus. Donec nec sollicitudin ex, malesuada auctor turpis. Sed eget scelerisque diam, quis finibus nunc. Vivamus posuere elementum varius. Aliquam finibus mollis mauris, sed posuere massa luctus ac. Vestibulum eget nibh eget ligula luctus aliquam. Donec imperdiet sit amet nunc ut fermentum. Sed ut euismod odio, a eleifend elit. Maecenas tempus aliquet interdum. Proin sodales cursus justo. Nulla pulvinar est sed vehicula dapibus. Suspendisse tincidunt auctor imperdiet.
 
-Quisque cursus turpis sit amet volutpat tincidunt. Etiam ac elit libero. Mauris massa sem, molestie non congue sodales, lobortis a lectus. Quisque consectetur mi ac libero interdum faucibus. Ut quis faucibus nisl. Morbi condimentum a magna nec efficitur. Nunc et orci commodo, feugiat eros vel, tincidunt ante. Integer in tempus tellus. Mauris sem ex, auctor et porttitor eu, commodo et elit. Nunc eget imperdiet lorem. Maecenas finibus bibendum urna vitae dignissim. Nulla consectetur ullamcorper tempor. Donec fringilla, ex id gravida ultrices, justo ipsum imperdiet ligula, vitae egestas est velit eu quam. Integer iaculis urna tempor, laoreet mauris sed, tincidunt lorem.
+#### Success Response Example
+##### /api/v1/admin/76
+```json
+{
+    "data": {
+        "id": 76,
+        "username": "test_get_admin1",
+        "firstname": "TestGet",
+        "lastname": "Admin1",
+        "email": "test_get_admin1@gmail.com",
+        "birthday": "1969-12-31T06:00:00.000Z",
+        "phone": "5558675309",
+        "created_on": "2015-05-28T17:36:54.652Z",
+        "updated_on": "2015-05-28T17:36:54.652Z",
+        "login_on": "2015-05-28T17:36:55.544Z"
+    }
+}
+```
 
-Donec non erat at mi facilisis pellentesque. Mauris at dignissim diam. Nunc at nulla sed nulla imperdiet venenatis at eget nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam erat volutpat. Curabitur molestie nunc tortor, in mattis nibh semper sit amet. Nam gravida erat ac vestibulum ornare. Vestibulum vehicula molestie rhoncus. Nam et euismod metus.
+##### /api/v1/admin/test_get_admin2
+```json
+{
+    "data": {
+        "id": 77,
+        "username": "test_get_admin2",
+        "firstname": "TestGet",
+        "lastname": "Admin2",
+        "email": "test_get_admin2@gmail.com",
+        "birthday": "1969-12-31T06:00:00.000Z",
+        "phone": "5558675309",
+        "created_on": "2015-05-28T17:36:54.745Z",
+        "updated_on": "2015-05-28T17:36:54.745Z",
+        "login_on": ""
+    }
+}
+```
 
-Proin ornare sed enim sed hendrerit. Interdum et malesuada fames ac ante ipsum primis in faucibus. Quisque nec erat tellus. Morbi a urna est. Praesent ac elit vitae turpis dapibus semper. Quisque sed varius mi. Aliquam sed ultricies felis. Aliquam erat volutpat. Morbi vestibulum et dui sit amet egestas. Morbi vel faucibus neque. Etiam pulvinar lorem nec est vehicula congue. Morbi ut enim placerat, venenatis diam a, mollis elit.
+##### /api/v1/admin/test_get_admin3@gmail.com
+```json
+{
+    "data": {
+        "id": 78,
+        "username": "test_get_admin3",
+        "firstname": "TestGet",
+        "lastname": "Admin3",
+        "email": "test_get_admin3@gmail.com",
+        "birthday": "1969-12-31T06:00:00.000Z",
+        "phone": "5558675309",
+        "created_on": "2015-05-28T17:36:54.884Z",
+        "updated_on": "2015-05-28T17:36:54.884Z",
+        "login_on": "2015-05-28T17:58:18.319Z"
+    }
+}
+```
 
-Phasellus sagittis arcu a orci bibendum sagittis. Cras et ultrices tortor. Duis ac elit id augue blandit lacinia. Ut tempus, libero in malesuada condimentum, dolor quam sagittis dolor, vulputate auctor velit turpis vel augue. Quisque ultricies tempor turpis eu rutrum. Mauris et semper neque, vel lobortis sem. Duis porttitor tortor et sapien venenatis auctor. Sed non elementum justo, sed pharetra risus. Proin viverra nunc ac nulla feugiat suscipit.
+#### Failed Response Example
+##### /api/v1/admin/&
+```json
+{
+    "errors": [
+        {
+            "code": 3002,
+            "message": "unidentifiable from: &"
+        }
+    ]
+}
+```
+
+### PUT Admin Batch
+
+* This functionality is not yet implemented *
+
+#### Failed Response Example
+```json
+{
+    "data": {
+        "phone": "8675308"
+    },
+    "errors": [
+        {
+            "code": 1003,
+            "message": "Unsupported API operation."
+        }
+    ]
+}
+```
+
+### PUT Admin By ID
+
+#### Request Example
+##### /api/v1/admin/76
+```json
+{
+	"phone": "8675308"
+}
+```
+
+#### Success Response Example
+```json
+{
+    "data": {
+        "id": 76,
+        "username": "test_get_admin1",
+        "firstname": "TestGet",
+        "lastname": "Admin1",
+        "email": "test_get_admin1@gmail.com",
+        "birthday": "1969-12-31T06:00:00.000Z",
+        "phone": "8675308",
+        "created_on": "2015-05-28T17:36:54.652Z",
+        "updated_on": "2015-05-28T18:12:58.912Z",
+        "login_on": "2015-05-28T17:36:55.544Z"
+    }
+}
+```
+
+### DELETE Admin Batch
+
+* This functionality is not yet implemented *
+
+#### Failed Response Example
+```json
+{
+    "data": {
+        "phone": "8675308"
+    },
+    "errors": [
+        {
+            "code": 1003,
+            "message": "Unsupported API operation."
+        }
+    ]
+}
+```
+
+### DELETE Admin By ID
+
+#### Success Response Example
+##### /api/v1/admin/76
+```json
+{
+    "data": {
+        "affected": 1,
+        "ids": [
+            76
+        ]
+    }
+}
+```
+
+#### Failed Response Example
+##### /api/v1/admin/76
+```json
+{
+    "data": {
+        "false": ""
+    },
+    "errors": [
+        {
+            "code": 3002,
+            "message": "unidentifiable from: 76"
+        }
+    ]
+}
+```

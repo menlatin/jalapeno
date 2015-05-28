@@ -1,13 +1,12 @@
-# diGeoCache API
-## Authentication
+# Authentication
 
 | Endpoint | Description |
 | ---- | --------------- |
-| [POST /api/v1/auth/admin/](#POST-/api/v1/auth/admin/) | Request new admin
+| [POST /api/v1/auth/admin/](#post-admin-login) | Request new admin
 | [POST /api/v1/auth/user/](#post-user-login) | Request admin list |
 | [GET /api/v1/auth/logout/](#get-logout) | Request bulk admin update  |
 
-### POST /api/v1/auth/admin/
+### POST Admin Login
 
 #### Request Example
 ```json
@@ -46,8 +45,8 @@
 #### Request Example
 ```json
 {
-	"username": "test_admin",
-	"password": "test_admin_pasword1"
+	"username": "test_user",
+	"password": "test_user_pasword1"
 }
 ```
 

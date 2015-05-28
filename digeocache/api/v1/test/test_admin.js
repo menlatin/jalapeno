@@ -45,6 +45,7 @@ var checkAdminCreate = function(createResponses) {
     test.expect(createResponses).to.be.an('array');
     for (var index in createResponses) {
         var response = createResponses[index];
+        test.expect(response.success).to.exist;
         test.expect(response.success).to.equal(true);
         checkAdminData(response.data);
     }
@@ -56,11 +57,7 @@ var checkAdminDelete = function(deleteResponses) {
         var response = deleteResponses[index];
         test.expect(response.success).to.exist;
         test.expect(response.success).to.equal(true);
-        test.expect(response.affected).to.exist;
-        test.expect(response.affected).to.be.within(0, 1);
-        test.expect(response.ids).to.exist;
-        test.expect(response.ids).to.be.an('array');
-        test.expect(response.ids).to.have.length(response.affected);
+        checkAdminDeleteData(response.data);
     }
 }
 
@@ -85,10 +82,17 @@ var checkAdminData = function(data) {
 }
 
 var checkAdminDeleteData = function(data) {
+    test.expect(data).to.exist;
+    test.expect(data).to.be.an('object');
+    test.expect(data.affected).to.exist;
+    test.expect(data.affected).to.be.within(0, 1);
+    test.expect(data.ids).to.exist;
+    test.expect(data.ids).to.be.an('array');
+    test.expect(data.ids).to.have.length(data.affected);
 }
 
 var checkAdminErrors = function(errors) {
-    test.expect(errors, "Errors in response:\n"+(errors ? printErrors(errors) : "")).to.not.exist;
+    test.expect(errors, "Errors in response:\n" + (errors ? printErrors(errors) : "")).to.not.exist;
 }
 
 var verifyAdminToken = function(data) {
@@ -105,7 +109,7 @@ var verifyAdminToken = function(data) {
 }
 
 var authAdmin = function(t) {
-    it(t.endpoint+' => should ' + t.should, function * () {
+    it(t.endpoint + ' => should ' + t.should, function * () {
         var response = yield test.request.post(t.endpoint).send(t.credentials).expect(t.expect).end();
 
         // Positive Test Case Expects No Errors
@@ -121,7 +125,7 @@ var authAdmin = function(t) {
 }
 
 var postAdmin = function(t) {
-    it(t.endpoint+' => should ' + t.should, function * () {
+    it(t.endpoint + ' => should ' + t.should, function * () {
         var response = undefined;
         // Credentials Provided to Access Resource
         if (t.credentials) {
@@ -149,11 +153,11 @@ var postAdmin = function(t) {
 }
 
 var getAdmin = function(t) {
-    it(t.endpoint+' => should ' + t.should, function * () {
+    it(t.endpoint + ' => should ' + t.should, function * () {
         // Check for wildcard :id in endpoint for tests using id in URL
         var modifiedEndpoint = _.clone(t.endpoint, true);
         var pathArray = modifiedEndpoint.split('/');
-        if(_.includes(pathArray, ":id")) {
+        if (_.includes(pathArray, ":id")) {
             // Get the first baseline data item's ID
             var userToFind = testAdminData.get.baseline[0].admin.username;
             var findUsername = yield test.db.admin_by_username(userToFind);
@@ -190,11 +194,11 @@ var getAdmin = function(t) {
 }
 
 var putAdmin = function(t) {
-    it(t.endpoint+' => should ' + t.should, function * () {
+    it(t.endpoint + ' => should ' + t.should, function * () {
         // Check for wildcard :id in endpoint for tests using id in URL
         var modifiedEndpoint = _.clone(t.endpoint, true);
         var pathArray = modifiedEndpoint.split('/');
-        if(_.includes(pathArray, ":id")) {
+        if (_.includes(pathArray, ":id")) {
             // Get the first baseline data item's ID
             var userToFind = testAdminData.put.baseline[0].admin.username;
             var findUsername = yield test.db.admin_by_username(userToFind);
@@ -231,11 +235,11 @@ var putAdmin = function(t) {
 }
 
 var delAdmin = function(t) {
-    it(t.endpoint+' => should ' + t.should, function * () {
+    it(t.endpoint + ' => should ' + t.should, function * () {
         // Check for wildcard :id in endpoint for tests using id in URL
         var modifiedEndpoint = _.clone(t.endpoint, true);
         var pathArray = modifiedEndpoint.split('/');
-        if(_.includes(pathArray, ":id")) {
+        if (_.includes(pathArray, ":id")) {
             // Get the first baseline data item's ID
             var userToFind = testAdminData.del.baseline[0].admin.username;
             var findUsername = yield test.db.admin_by_username(userToFind);
@@ -311,7 +315,9 @@ describe('Admin POST Tests => /api/v1/admin', function() {
         // Deep clone baseline so we can delete zombie node
         // from last positive POST case run
         var baselinePlusZombieAdmin = _.clone(testAdminData.post.baseline, true);
-        baselinePlusZombieAdmin.push({ admin: testAdminData.post.tests[0].payload });
+        baselinePlusZombieAdmin.push({
+            admin: testAdminData.post.tests[0].payload
+        });
 
         deleteAdminBaseline(baselinePlusZombieAdmin).
         then(

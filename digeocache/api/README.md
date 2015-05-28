@@ -65,25 +65,25 @@ function hola() {
 
 | Endpoint | Description |
 | ---- | --------------- |
-| [POST /api/v1/admins/](docs/admin.md#good) | Request new admin
-| [GET /api/v1/admins/](#get-admins) | Request admin list |
-| [PUT /api/v1/admins/](#put-admins) | Request bulk admin update  |
-| [DELETE /api/v1/admins/](#delete-admins) | Request bulk admin delete |
-| [GET /api/v1/admins/:id](#get-admins-id) | Request admin with id |
-| [PUT /api/v1/admins/:id](#put-admins-id) | Request admin edit with id |
-| [DELETE /api/v1/admins/:id](#delete-admins-id) | Request admin delete with id |
+| [POST /api/v1/admin/](docs/admin.md#post-admin) | Request new admin
+| [GET /api/v1/admin/](docs/admin.md#get-admin-list) | Request admin list |
+| [GET /api/v1/admin/:id](docs/admin.md#get-admin-by-id) | Request admin with id |
+| [PUT /api/v1/admin/](docs/admin.md#put-admin-batch) | Request bulk admin update  |
+| [PUT /api/v1/admin/:id](docs/admin.md#put-admin-by-id) | Request admin edit with id |
+| [DELETE /api/v1/admin/](docs/admin.md#delete-admin-batch) | Request bulk admin delete |
+| [DELETE /api/v1/admin/:id](docs/admin.md#delete-admin-by-id) | Request admin delete with id |
 
 #### [User](docs/user.md)
 
 | Endpoint | Description |
 | ---- | --------------- |
-| [POST /api/v1/users/](#post-users) | Request new user
-| [GET /api/v1/users/](#get-users) | Request user list |
-| [PUT /api/v1/users/](#put-users) | Request bulk user update  |
-| [DELETE /api/v1/users/](#delete-users) | Request bulk user delete |
-| [GET /api/v1/users/:id](#get-users-id) | Request user with id |
-| [PUT /api/v1/users/:id](#put-users-id) | Request user edit with id |
-| [DELETE /api/v1/users/:id](#delete-users-id) | Request user delete with id |
+| [POST /api/v1/user/](docs/user.md#post-user) | Request new user
+| [GET /api/v1/user/](docs/user.md#get-user-list) | Request user list |
+| [GET /api/v1/user/:id](docs/user.md#get-user-by-id) | Request user with id |
+| [PUT /api/v1/user/](docs/user.md#put-user-batch) | Request bulk user update  |
+| [PUT /api/v1/user/:id](docs/user.md#put-user-by-id) | Request user edit with id |
+| [DELETE /api/v1/user/](docs/user.md#delete-user-batch) | Request bulk user delete |
+| [DELETE /api/v1/user/:id](docs/user.md#delete-user-by-id) | Request user delete with id |
 
 #### Geocache
 

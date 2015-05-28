@@ -136,7 +136,7 @@ module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility
                         return yield user.invalidPost(user_pre, checkEmail.errors);
                     }
 
-                    if(isTaken) {
+                    if (isTaken) {
                         return yield user.invalidPost(user_pre, takenErrors);
                     }
 
@@ -317,39 +317,40 @@ module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility
                     if (userByID.success) {
                         response.success = true;
                         response.data = userByID.data;
-                        return response;
                     } else {
                         response.success = false;
                         response.errors = userByID.errors;
-                        return response;
                     }
                 } else if (username_test.valid) {
                     var userByUsername = yield db.user_by_username(username_test.data);
                     if (userByUsername.success) {
                         response.success = true;
                         response.data = userByUsername.data;
-                        return response;
                     } else {
                         response.success = false;
                         response.errors = userByUsername.errors;
-                        return response;
                     }
                 } else if (email_test.valid) {
                     var userByEmail = yield db.user_by_email(email_test.data);
                     if (userByEmail.success) {
                         response.success = true;
                         response.data = userByEmail.data;
-                        return response;
                     } else {
                         response.success = false;
                         response.errors = userByEmail.errors;
-                        return response;
                     }
                 } else {
                     response.success = false;
                     response.errors = [errors.UNIDENTIFIABLE(params_id)];
-                    return response;
                 }
+
+                // Need to be sure this gives back an admin and not empty array!
+                // Somehow we detected a valid id/username/email but still wasn't in DB
+                if (response.success == true && response.data.length == 0) {
+                    response.success = false;
+                    response.errors = [errors.UNIDENTIFIABLE(params_id)];
+                }
+                return response;
             };
         },
         catchErrors: function(err, pre) {

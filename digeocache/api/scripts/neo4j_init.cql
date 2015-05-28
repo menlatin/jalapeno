@@ -28,7 +28,7 @@ DELETE n, r;
 
 // Create Admins
 USING PERIODIC COMMIT
-LOAD CSV WITH HEADERS FROM "file:/Users/elliott/code/git/jalapeno/digeocache/new_api/scripts/csv/admin.csv" AS row
+LOAD CSV WITH HEADERS FROM "file:/Users/elliott/code/git/jalapeno/digeocache/api/scripts/csv/admin.csv" AS row
 CREATE (:Admin {
 	username: row.username, 
 	firstname: row.firstname, 
@@ -44,7 +44,7 @@ CREATE (:Admin {
 
 // Create Users
 USING PERIODIC COMMIT
-LOAD CSV WITH HEADERS FROM "file:/Users/elliott/code/git/jalapeno/digeocache/new_api/scripts/csv/user.csv" AS row
+LOAD CSV WITH HEADERS FROM "file:/Users/elliott/code/git/jalapeno/digeocache/api/scripts/csv/user.csv" AS row
 CREATE (:User {
 	username: row.username, 
 	firstname: row.firstname, 
@@ -60,7 +60,7 @@ CREATE (:User {
 
 // Create Geocaches
 USING PERIODIC COMMIT
-LOAD CSV WITH HEADERS FROM "file:/Users/elliott/code/git/jalapeno/digeocache/new_api/scripts/csv/geocache.csv" AS row
+LOAD CSV WITH HEADERS FROM "file:/Users/elliott/code/git/jalapeno/digeocache/api/scripts/csv/geocache.csv" AS row
 CREATE (:Geocache {
 	title: row.title, 
 	message: row.message, 
@@ -76,7 +76,7 @@ CREATE (:Geocache {
 
 // Create Comments
 USING PERIODIC COMMIT
-LOAD CSV WITH HEADERS FROM "file:/Users/elliott/code/git/jalapeno/digeocache/new_api/scripts/csv/comment.csv" AS row
+LOAD CSV WITH HEADERS FROM "file:/Users/elliott/code/git/jalapeno/digeocache/api/scripts/csv/comment.csv" AS row
 CREATE (:Comment {
 	text: row.text,
 	created_on: row.created_on,
@@ -85,7 +85,7 @@ CREATE (:Comment {
 
 // Create Wallets
 USING PERIODIC COMMIT
-LOAD CSV WITH HEADERS FROM "file:/Users/elliott/code/git/jalapeno/digeocache/new_api/scripts/csv/wallet.csv" AS row
+LOAD CSV WITH HEADERS FROM "file:/Users/elliott/code/git/jalapeno/digeocache/api/scripts/csv/wallet.csv" AS row
 CREATE (:Wallet {
 	name: row.name,
 	created_on: row.created_on,
@@ -94,7 +94,7 @@ CREATE (:Wallet {
 
 // Create Currencies
 USING PERIODIC COMMIT
-LOAD CSV WITH HEADERS FROM "file:/Users/elliott/code/git/jalapeno/digeocache/new_api/scripts/csv/currency.csv" AS row
+LOAD CSV WITH HEADERS FROM "file:/Users/elliott/code/git/jalapeno/digeocache/api/scripts/csv/currency.csv" AS row
 CREATE (:Currency {
 	abbreviation: row.abbreviation,
 	name: row.name,

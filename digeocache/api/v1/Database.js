@@ -116,11 +116,11 @@ module.exports = function DB(config) {
                 deferred.reject(response);
             } else {
                 if (results.length == 0) {
-                    response = results[0];
                     response.success = true;
+                    response.data = results[0];
                 } else {
-                    response = results[0];
                     response.success = true;
+                    response.data = results[0];
                 }
                 deferred.resolve(response);
             }

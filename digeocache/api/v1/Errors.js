@@ -109,6 +109,12 @@ module.exports = function Errors() {
                 message: "bad credentials ::: "+ctx
             };
         },
+        LOGOUT_FAILURE: function() {
+            return {
+                code: 3002,
+                message: "logout failure"
+            };
+        },
         UNIDENTIFIABLE: function(id) {
             return {
                 code: 3002,

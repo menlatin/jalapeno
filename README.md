@@ -6,6 +6,6 @@ Super Secret Jalapeno Project
 
 #### [diGeoCache API](digeocache/api/README.md)
 
-#### [diGeoCache Web](jalapeno/blob/master/digeocache/web/README.md)
+#### [diGeoCache Web](digeocache/web/README.md)
 
-#### [diGeoCache Mobile](jalapeno/blob/master/digeocache/mobile/README.md)
+#### [diGeoCache Mobile](digeocache/mobile/README.md)

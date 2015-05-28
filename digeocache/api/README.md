@@ -1,7 +1,4 @@
-# jalapeno
-Super Secret Jalapeno Project
-
-## diGeoCache
+# diGeoCache API
 
 Cryptocurrency-based game
 
@@ -56,12 +53,12 @@ function hola() {
 
 ### REST API V1
 
-#### Authentication
+#### [Authentication](docs/authentication.md)
 | Endpoint | Description |
 | ---- | --------------- |
-| [POST /api/v1/auth/admin/](#post-auth-admin) | Request new admin
-| [POST /api/v1/auth/user/](#post-auth-user) | Request admin list |
-| [GET /api/v1/auth/logout/](#get-auth-logout) | Request bulk admin update  |
+| [POST /api/v1/auth/admin/](docs/admin.md#post-admin-login) | Request new admin
+| [POST /api/v1/auth/user/](docs/admin.md#post-user-login) | Request admin list |
+| [GET /api/v1/auth/logout/](docs/admin.md#get-logout) | Request bulk admin update  |
 
 
 #### [Admin](docs/admin.md)
@@ -76,7 +73,7 @@ function hola() {
 | [PUT /api/v1/admins/:id](#put-admins-id) | Request admin edit with id |
 | [DELETE /api/v1/admins/:id](#delete-admins-id) | Request admin delete with id |
 
-#### User
+#### [User](docs/user.md)
 
 | Endpoint | Description |
 | ---- | --------------- |

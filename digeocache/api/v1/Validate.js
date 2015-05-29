@@ -25,9 +25,9 @@ module.exports = function Validate(errors) {
     var _ = require('lodash');
     var moment = require('moment');
 
-    var adminValidate = require('./admin/AdminValidate.js')();
-    var userValidate = require('./user/UserValidate.js')();
-    var geocacheValidate = require('./geocache/geocacheValidate.js')();
+    var adminValidate = require('./admin/AdminValidate.js')(errors);
+    var userValidate = require('./user/UserValidate.js')(errors);
+    var geocacheValidate = require('./geocache/geocacheValidate.js')(errors);
 
     var validate = {
         isEmpty: function isEmpty(data) {
@@ -220,7 +220,6 @@ module.exports = function Validate(errors) {
                 var email_test = validate.attribute(userSchema, userID, "email");
 
                 if (id_test.valid) {
-                    console.log("id_test = ", id_test);
                     var userByID = yield db.user_by_id(id_test.data.toString());
                     if (userByID.success) {
                         response.valid = true;
@@ -260,108 +259,6 @@ module.exports = function Validate(errors) {
                 return response;
             };
         },
-        latitude: function(lat) {
-            if (lat) {
-                // Replace whitespace to avoid false positives using Number(lng)
-                lat = lat.replace(/\s/g, "X");
-                var numLat = Number(lat);
-                if (numLat >= -90 && numLat <= 90) {
-                    return {
-                        valid: true,
-                        data: numLat
-                    };
-                }
-            }
-            return {
-                valid: false,
-                errors: [errors.COORDINATE_INVALID()]
-            };
-        },
-        longitude: function(lng) {
-            if (lng) {
-                // Replace whitespace to avoid false positives using Number(lng)
-                lng = lng.replace(/\s/g, "X");
-                var numLng = Number(lng);
-                if (numLng >= -180 && numLng <= 180) {
-                    return {
-                        valid: true,
-                        data: numLng
-                    };
-                }
-            }
-            return {
-                valid: false,
-                errors: [errors.COORDINATE_INVALID()]
-            };
-        },
-        coordinate: function(coordinateString) {
-            if (coordinateString) {
-                var coords = coordinateString.split(',');
-                if (coords.length == 2) {
-                    var lat = coords[0];
-                    var lng = coords[1];
-
-                    var test_lat = this.latitude(lat);
-                    var test_lng = this.longitude(lng);
-
-                    if (test_lat.valid && test_lng.valid) {
-                        return {
-                            valid: true,
-                            data: {
-                                lat: parseFloat(test_lat.data),
-                                lng: parseFloat(test_lng.data)
-                            }
-                        };
-                    }
-                }
-            }
-            return {
-                valid: false,
-                errors: [errors.COORDINATE_INVALID()]
-            };
-        },
-        category: function(categoryString) {
-            var categoryTest = this.regex(/^(RACE|CHARITY|RANDOM|ALL)$/i);
-            return categoryTest("category", categoryString);
-        },
-        distance: function(distanceString) {
-            var distanceTest = this.doubleRange({
-                min: 1.0,
-                max: 10000.0
-            });
-            return distanceTest("distance", distanceString);
-        },
-        period: function(periodString) {
-            if (!periodString) {
-                return {
-                    valid: false,
-                    errors: [errors.PERIOD_INVALID()]
-                };
-            }
-            var startStop = periodString.split(',');
-            if (startStop.length == 2) {
-                var start = startStop[0];
-                var stop = startStop[1];
-                var startMoment = moment(start, "YYYY-MM-DDTHH:mm:ss.SSSZ", true);
-                var stopMoment = moment(stop, "YYYY-MM-DDTHH:mm:ss.SSSZ", true);
-                var validStart = startMoment.isValid();
-                var validStop = stopMoment.isValid();
-
-                if (validStart && validStop && (validStart < validStop)) {
-                    return {
-                        valid: true,
-                        data: {
-                            start: startMoment.toISOString(),
-                            stop: stopMoment.toISOString()
-                        }
-                    };
-                }
-            }
-            return {
-                valid: false,
-                errors: [errors.PERIOD_INVALID()]
-            };
-        },
         regex: function(regex) {
             return function(attribute, value) {
                 var valid = regex.test(value);
@@ -393,37 +290,93 @@ module.exports = function Validate(errors) {
                 }
             };
         },
+        latitude: function() {
+            return function(attribute, value) {
+                if (value) {
+                    var lat = Number(value);
+                    if (lat >= -90 && lat <= 90) {
+                        return {
+                            valid: true,
+                            data: lat
+                        };
+                    }
+                }
+                return {
+                    valid: false,
+                    errors: [errors.ATTRIBUTE_INVALID(attribute)]
+                };
+            };
+        },
+        longitude: function() {
+            return function(attribute, value) {
+                if (value) {
+                    var lng = Number(value);
+                    if (lng >= -180 && lng <= 180) {
+                        return {
+                            valid: true,
+                            data: lng
+                        };
+                    }
+                }
+                return {
+                    valid: false,
+                    errors: [errors.ATTRIBUTE_INVALID(attribute)]
+                };
+            };
+        },
+        coordinate: function() {
+            return function(attribute, value) {
+                if (value) {
+                    var coords = value.split(',');
+                    if (coords.length == 2) {
+                        var lat = coords[0];
+                        var lng = coords[1];
+                        var test_lat = validate.latitude()("lat", lat);
+                        var test_lng = validate.longitude()("lng", lng);
+                        if (test_lat.valid && test_lng.valid) {
+                            return {
+                                valid: true,
+                                data: {
+                                    lat: test_lat.data,
+                                    lng: test_lng.data
+                                }
+                            };
+                        }
+                    }
+                }
+                return {
+                    valid: false,
+                    errors: [errors.ATTRIBUTE_INVALID(attribute)]
+                };
+            };
+        },
         doubleRange: function(range) {
             return function(attribute, value) {
-                if (_.isFinite(value) && ((value >= range.min) || (value <= range.max))) {
-                    return {
-                        valid: true,
-                        data: value
+                if (value) {
+                    var dbl = Number(value);
+                    if (_.isFinite(dbl) && ((dbl >= range.min) || (dbl <= range.max))) {
+                        return {
+                            valid: true,
+                            data: dbl
+                        }
                     }
-                } else {
-                    return {
-                        valid: false,
-                        errors: [errors.ATTRIBUTE_INVALID(attribute)]
-                    }
+                }
+                return {
+                    valid: false,
+                    errors: [errors.ATTRIBUTE_INVALID(attribute)]
                 }
             };
         },
-        dateRange: function(range) {
+        dateInRange: function(range) {
             return function(attribute, value) {
                 var date = moment(value, "YYYY-MM-DDTHH:mm:ss.SSSZ", true);
                 var valid = date.isValid();
-                if (valid) {
-                    if (date.isBefore(range.min) || date.isAfter(range.max)) {
-                        return {
-                            valid: false,
-                            errors: [errors.ATTRIBUTE_INVALID(attribute)]
-                        };
-                    } else {
-                        return {
-                            valid: true,
-                            data: date.toISOString()
-                        };
-                    }
+                if (valid && !(date.isBefore(range.min) || date.isAfter(range.max))) {
+                    return {
+                        valid: true,
+                        data: date.toISOString()
+                    };
+
                 } else {
                     return {
                         valid: false,
@@ -431,6 +384,53 @@ module.exports = function Validate(errors) {
                     };
                 }
             }
+        },
+        dateRange: function() {
+            return function(attribute, value) {
+                if (!value) {
+                    return {
+                        valid: false,
+                        errors: [errors.ATTRIBUTE_INVALID(attribute)]
+                    };
+                }
+                var range = value.split(',');
+                if (range.length == 2) {
+                    var start = range[0];
+                    var stop = range[1];
+                    var startMoment = moment(start, "YYYY-MM-DDTHH:mm:ss.SSSZ", true);
+                    var stopMoment = moment(stop, "YYYY-MM-DDTHH:mm:ss.SSSZ", true);
+                    var validStart = startMoment.isValid();
+                    var validStop = stopMoment.isValid();
+
+                    if (validStart && validStop && (validStart < validStop)) {
+                        return {
+                            valid: true,
+                            data: {
+                                start: startMoment.toISOString(),
+                                stop: stopMoment.toISOString()
+                            }
+                        };
+                    }
+                }
+                return {
+                    valid: false,
+                    errors: [errors.ATTRIBUTE_INVALID(attribute)]
+                };
+            }
+        },
+        category: function() {
+            return validate.regex(/^(RACE|CHARITY|RANDOM|ALL)$/i);
+        },
+        distance: function() {
+            return validate.doubleRange({
+                min: 1.0,
+                max: 20000.0
+            });
+        },
+        visits: function() {
+            return function(attribute, value) {
+
+            };
         }
     };
 

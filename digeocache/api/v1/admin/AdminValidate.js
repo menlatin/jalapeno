@@ -1,4 +1,4 @@
-module.exports = function AdminValidate() {
+module.exports = function AdminValidate(errors) {
 
     var moment = require('moment');
 
@@ -17,7 +17,7 @@ module.exports = function AdminValidate() {
             var maxAge = 120;
             var minMoment = moment().subtract(maxAge, 'years');
             var maxMoment = moment().subtract(minAge, 'years');
-            return this.dateRange({
+            return this.dateInRange({
                 min: minMoment,
                 max: maxMoment
             });

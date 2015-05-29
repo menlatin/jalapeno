@@ -244,7 +244,7 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
                 var geocache_pre = yield parse(this);
 
                 // No parameter provided in URL
-                if (this.params.id == undefined && this.params.id == null) {
+                if (this.params.id == undefined || this.params.id == null) {
                     // Perhaps request is for a batch delete
                     // batch_test = validate.schemaForBatchDelete(geocache.schema, geocache_pre);
                     // if (batch_test.valid) {
@@ -279,17 +279,22 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
         },
         mixed: function * (next) {
             try {
-                var filter_test = yield validate.geocache_querystring(this.request.querystring,userSchema,db);
-
-
-                for(t in filter_test) {
-                    if(filter_test[t].errors) {
-                        console.log(t+" errors = "+JSON.stringify(filter_test[t].errors));
-                    }
-                    else {
-                        console.log(t+" data = "+JSON.stringify(filter_test[t].data));
+                // No parameter provided in URL
+                if ((this.params.id == undefined || this.params.id == null) && _.isEmpty(this.query)) {
+                    // Return all geocaches      
+                    var allGeocaches = yield db.geocaches_all();
+                    if (allGeocaches.success) {
+                        return yield geocache.success(allGeocaches.data);
+                    } else {
+                        return yield geocache.invalid(allGeocaches.errors);
                     }
                 }
+                // Parameter exists in URL
+                else {
+                }
+
+                var filter = yield validate.geocache_query_filter(this.query,userSchema,db);
+                console.log("FILTER = ", JSON.stringify(filter,null,4));
 
                 
 

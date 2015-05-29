@@ -162,16 +162,16 @@ module.exports = function Errors() {
             };
         },
         /* Geocache Validation Errors */
-        COORDINATE_INVALID: function() {
+        LOCATION_REQUIRED: function() {
             return {
-                code: 4001,
-                message: "invalid coordinate"
+                code: 4003,
+                message: "location required for distance filter"
             };
         },
-        PERIOD_INVALID: function() {
+        QUERY_PARAM_INVALID: function(param) {
             return {
-                code: 4002,
-                message: "invalid period"
+                code: 4004,
+                message: "query param invalid: "+param
             };
         }
     });

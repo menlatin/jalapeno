@@ -56,11 +56,7 @@ var checkGeocacheDelete = function(deleteResponses) {
         var response = deleteResponses[index];
         test.expect(response.success).to.exist;
         test.expect(response.success).to.equal(true);
-        test.expect(response.affected).to.exist;
-        // test.expect(response.affected).to.be.within(0, 1);
-        test.expect(response.ids).to.exist;
-        test.expect(response.ids).to.be.an('array');
-        test.expect(response.ids).to.have.length(response.affected);
+        checkUserDeleteData(response.data);
     }
 }
 
@@ -96,7 +92,15 @@ var checkGeocacheData = function(data) {
     }
 }
 
-var checkGeocacheDeleteData = function(data) {}
+var checkGeocacheDeleteData = function(data) {
+    test.expect(data).to.exist;
+    test.expect(data).to.be.an('object');
+    test.expect(data.affected).to.exist;
+    test.expect(data.affected).to.be.within(0, 1);
+    test.expect(data.ids).to.exist;
+    test.expect(data.ids).to.be.an('array');
+    test.expect(data.ids).to.have.length(data.affected);
+}
 
 var checkGeocacheErrors = function(errors) {
     test.expect(errors, "Errors in response:\n" + (errors ? printErrors(errors) : "")).to.not.exist;
@@ -417,7 +421,7 @@ describe('Geocache DELETE Tests => /api/v1/geocache', function() {
             createResponses => {
                 checkGeocacheCreate(createResponses);
                 console.log("\t2. successfully created baseline");
-                done();
+                done
             },
             error => {
                 checkGeocacheErrors(error);
@@ -435,7 +439,7 @@ var createGeocacheBaseline = co.wrap(function * (baseline) {
     var creates = [];
     for (var index in baseline) {
     	var geocache = baseline[index].geocache;
-    	var admin = baselin[index].admin;
+    	var admin = baseline[index].admin;
     	var user = baseline[index].user;
         if (geocache && admin) {
             creates.push(yield * createGeocacheAsAdmin(geocache));

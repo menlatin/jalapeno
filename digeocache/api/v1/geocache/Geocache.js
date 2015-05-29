@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, utility) {
+module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, utility, _, userSchema) {
 
     var geocache = {
         schema: [{
@@ -63,7 +63,7 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
         }, {
             attribute: "is_physical",
             type: Boolean,
-            required: true
+            required: true,
             auto: false,
             test: validate.geocache_is_physical()
         }, {
@@ -117,14 +117,10 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
             // console.log("geocache.post");
             try {
                 // TODO: Be sure this is being requested by authenticated geocache w/proper privileges
-                
-
-
 
                 var geocache_pre = yield parse(this);
                 var geocache_test = validate.schema(geocache.schema, geocache_pre);
                 if (geocache_test.valid) {
-
 
                     // Add automatic fields
                     var now = new Date();
@@ -139,7 +135,6 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
                     } else {
                         return yield geocache.invalidPost(geocache_pre, create.errors);
                     }
-
                 } else {
                     // Request was not valid,
                     return yield geocache.invalidPost(geocache_pre, geocache_test.errors);
@@ -282,6 +277,26 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
                 return yield geocache.catchErrors(e, geocache_pre);
             }
         },
+        mixed: function * (next) {
+            try {
+                var filter_test = yield validate.geocache_querystring(this.request.querystring,userSchema,db);
+
+
+                for(t in filter_test) {
+                    if(filter_test[t].errors) {
+                        console.log(t+" errors = "+JSON.stringify(filter_test[t].errors));
+                    }
+                    else {
+                        console.log(t+" data = "+JSON.stringify(filter_test[t].data));
+                    }
+                }
+
+                
+
+            } catch (e) {
+                return yield geocache.catchErrors(e, null);
+            }
+        },
         identifyFromURL: function(params_id) {
             return function * (next) {
                 // Try to identify existing geocache
@@ -295,39 +310,40 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
                     if (geocacheByID.success) {
                         response.success = true;
                         response.data = geocacheByID.data;
-                        return response;
                     } else {
                         response.success = false;
                         response.errors = geocacheByID.errors;
-                        return response;
                     }
                 } else if (username_test.valid) {
                     var geocacheByUsername = yield db.geocache_by_username(username_test.data);
                     if (geocacheByUsername.success) {
                         response.success = true;
                         response.data = geocacheByUsername.data;
-                        return response;
                     } else {
                         response.success = false;
                         response.errors = geocacheByUsername.errors;
-                        return response;
                     }
                 } else if (email_test.valid) {
                     var geocacheByEmail = yield db.geocache_by_email(email_test.data);
                     if (geocacheByEmail.success) {
                         response.success = true;
                         response.data = geocacheByEmail.data;
-                        return response;
                     } else {
                         response.success = false;
                         response.errors = geocacheByEmail.errors;
-                        return response;
                     }
                 } else {
                     response.success = false;
                     response.errors = [errors.UNIDENTIFIABLE(params_id)];
-                    return response;
                 }
+
+                // Need to be sure this gives back an Geocache and not empty array!
+                // Somehow we detected a valid id/username/email but still wasn't in DB
+                if (response.success == true && response.data.length == 0) {
+                    response.success = false;
+                    response.errors = [errors.UNIDENTIFIABLE(params_id)];
+                }
+                return response;
             };
         },
         catchErrors: function(err, pre) {

@@ -160,6 +160,19 @@ module.exports = function Errors() {
                 code: 3008,
                 message: "update request empty"
             };
+        },
+        /* Geocache Validation Errors */
+        COORDINATE_INVALID: function() {
+            return {
+                code: 4001,
+                message: "invalid coordinate"
+            };
+        },
+        PERIOD_INVALID: function() {
+            return {
+                code: 4002,
+                message: "invalid period"
+            };
         }
     });
     return errors;

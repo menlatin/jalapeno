@@ -3,15 +3,17 @@ module.exports = function GeocacheDB() {
         /* Geocache Cypher Queries */
         geocache_return: function(alias) {
             return " id(" + alias + ") AS id, " +
-                alias + ".username AS username, " +
-                alias + ".firstname AS firstname, " +
-                alias + ".lastname AS lastname, " +
-                alias + ".email AS email, " +
-                alias + ".birthday AS birthday, " +
-                alias + ".phone AS phone, " +
+                alias + ".title AS title, " +
+                alias + ".message AS message, " +
+                alias + ".lat AS lat, " +
+                alias + ".lng AS lng, " +
+                alias + ".currency AS currency, " +
+                alias + ".amount AS amount, " +
+                alias + ".is_physical AS is_physical, " +
+                alias + ".delay AS delay, " +
+                alias + ".drop_count AS drop_count, " +
                 alias + ".created_on AS created_on, " +
-                alias + ".updated_on AS updated_on, " +
-                alias + ".login_on AS login_on";
+                alias + ".updated_on AS updated_on";
         },
         geocache_create: function(geocache) {
             var query = "CREATE (g:Geocache {geocache}) " +
@@ -37,19 +39,19 @@ module.exports = function GeocacheDB() {
                 })
                 .then(this.successOneOrNone, this.error);
         },
-        geocache_by_id: function(id) {
+        geocaches_by_id: function(id) {
             var query = "MATCH (g:Geocache) WHERE id(g) = " + id +
                 " RETURN " + this.geocache_return("g");
             return this.cypher(query)
                 .then(this.successOneOrNone, this.error);
         },
-        geocache_by_username: function(username) {
+        geocaches_by_username: function(username) {
             var query = "MATCH (g:Geocache) WHERE g.username = \"" + username +
                 "\" RETURN " + this.geocache_return("g");
             return this.cypher(query)
                 .then(this.successOneOrNone, this.error);
         },
-        geocache_by_email: function(email) {
+        geocaches_by_email: function(email) {
             var query = "MATCH (g:Geocache) WHERE g.email = \"" + email +
                 "\" RETURN " + this.geocache_return("g");
             return this.cypher(query)

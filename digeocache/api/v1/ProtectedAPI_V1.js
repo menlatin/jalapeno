@@ -1,4 +1,4 @@
-module.exports = function ProtectedAPI_V1(admin,user) {
+module.exports = function ProtectedAPI_V1(admin, user, geocache) {
 
     var Router = require('koa-router');
 
@@ -30,6 +30,16 @@ module.exports = function ProtectedAPI_V1(admin,user) {
     ProtectedAPI_V1.put('/user/:id', user.put);
     ProtectedAPI_V1.del('/user', user.del);
     ProtectedAPI_V1.del('/user/:id', user.del);
+
+    // Geocache routes
+    ProtectedAPI_V1.post('/geocache', geocache.post);
+    ProtectedAPI_V1.get('/geocache', geocache.mixed);
+    ProtectedAPI_V1.get('/geocache/:id', geocache.mixed);
+    ProtectedAPI_V1.put('/geocache', geocache.put);
+    ProtectedAPI_V1.put('/geocache/:id', geocache.put);
+    ProtectedAPI_V1.del('/geocache', geocache.del);
+    ProtectedAPI_V1.del('/geocache/:id', geocache.del);
+
 
     return ProtectedAPI_V1;
 };

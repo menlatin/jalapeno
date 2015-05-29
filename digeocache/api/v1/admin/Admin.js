@@ -360,7 +360,7 @@ module.exports = function Admin(db, bcrypt, parse, errors, validate, jwt, utilit
                     response.errors = [errors.UNIDENTIFIABLE(params_id)];
                 }
 
-                // Need to be sure this gives back an admin and not empty array!
+                // Need to be sure this gives back an Admin and not empty array!
                 // Somehow we detected a valid id/username/email but still wasn't in DB
                 if(response.success == true && response.data.length == 0) {
                     response.success = false;

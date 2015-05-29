@@ -72,6 +72,8 @@ module.exports = function V1() {
     var UserLogin = require('./auth/UserLogin.js');
     var User = require('./user/User.js');
 
+    var Geocache = require('./geocache/Geocache.js');
+
     var errors = new Errors();
     var db = require('./Database.js')('http://localhost:7474');
 
@@ -84,11 +86,13 @@ module.exports = function V1() {
     var userLogin = new UserLogin(db, bcrypt, fs, jwt, parse, errors, validate, utility);
     var user = new User(db, bcrypt, parse, errors, validate, jwt, utility, _);
 
+    var geocache = new Geocache(db, bcrypt, parse, errors, validate, jwt, utility, _, user.schema);    
+
     // Routing
     var PublicAPI_V1 = require('./PublicAPI_V1.js');
     var pubV1 = new PublicAPI_V1(admin, adminLogin, user, userLogin);
     var ProtectedAPI_V1 = require('./ProtectedAPI_V1.js');
-    var apiV1 = new ProtectedAPI_V1(admin,user);
+    var apiV1 = new ProtectedAPI_V1(admin,user,geocache);
 
     // Custom 401 handling if you don't want to expose koa-jwt errors to users
     app.use(utility.middleware.custom401);

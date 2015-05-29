@@ -188,11 +188,11 @@ module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility
                 // Parameter exists in URL
                 else {
                     // Try to identify existing user
-                    var findUser = yield user.identifyFromURL(this.params.id);
-                    if (findUser.success) {
-                        return yield user.success(findUser.data);
+                    var user_test = yield validate.userID(this.params.id, user.schema, db);
+                    if (user_test.valid) {
+                        return yield user.success(user_test.data);
                     } else {
-                        return yield user.invalid(findUser.errors);
+                        return yield user.invalid(user_test.errors);
                     }
                 }
             } catch (e) {
@@ -224,12 +224,14 @@ module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility
                 else {
                     // Try to identify existing user
                     var existingUser = undefined;
-                    var findUser = yield user.identifyFromURL(this.params.id);
-                    if (findUser.success) {
-                        existingUser = findUser.data;
+
+                    var user_test = yield validate.userID(this.params.id, user.schema, db);
+                    if (user_test.valid) {
+                        existingUser = user_test.data;
                     } else {
-                        return yield user.invalidPost(user_pre, findUser.errors);
+                        return yield user.invalidPost(user_pre, user_test.errors);
                     }
+
                     // If we got this far, we must have found a match.
                     // Now validate what we're trying to update
                     user_test = validate.schemaForUpdate(user.schema, user_pre);
@@ -286,12 +288,15 @@ module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility
                 else {
                     // Try to identify existing user
                     var existingUser = undefined;
-                    var findUser = yield user.identifyFromURL(this.params.id);
-                    if (findUser.success) {
-                        existingUser = findUser.data;
+
+                    // Try to identify existing user
+                    var user_test = yield validate.userID(this.params.id, user.schema, db);
+                    if (user_test.valid) {
+                        existingUser = user_test.data;
                     } else {
-                        return yield user.invalidPost(user_pre, findUser.errors);
+                        return yield user.invalidPost(user_pre, user_test.errors);
                     }
+
                     // If we got this far, we must have found a match to delete.
                     var userDelete = yield db.user_delete_by_id(existingUser.id);
                     if (userDelete.success) {
@@ -304,55 +309,55 @@ module.exports = function User(db, bcrypt, parse, errors, validate, jwt, utility
                 return yield user.catchErrors(e, user_pre);
             }
         },
-        identifyFromURL: function(params_id) {
-            return function * (next) {
-                // Try to identify existing user
-                var response = {};
-                var id_test = validate.id(params_id);
-                var username_test = validate.attribute(user.schema, params_id, "username");
-                var email_test = validate.attribute(user.schema, params_id, "email");
+        // identifyFromURL: function(params_id) {
+        //     return function * (next) {
+        //         // Try to identify existing user
+        //         var response = {};
+        //         var id_test = validate.id(params_id);
+        //         var username_test = validate.attribute(user.schema, params_id, "username");
+        //         var email_test = validate.attribute(user.schema, params_id, "email");
 
-                if (id_test.valid) {
-                    var userByID = yield db.user_by_id(id_test.data.toString());
-                    if (userByID.success) {
-                        response.success = true;
-                        response.data = userByID.data;
-                    } else {
-                        response.success = false;
-                        response.errors = userByID.errors;
-                    }
-                } else if (username_test.valid) {
-                    var userByUsername = yield db.user_by_username(username_test.data);
-                    if (userByUsername.success) {
-                        response.success = true;
-                        response.data = userByUsername.data;
-                    } else {
-                        response.success = false;
-                        response.errors = userByUsername.errors;
-                    }
-                } else if (email_test.valid) {
-                    var userByEmail = yield db.user_by_email(email_test.data);
-                    if (userByEmail.success) {
-                        response.success = true;
-                        response.data = userByEmail.data;
-                    } else {
-                        response.success = false;
-                        response.errors = userByEmail.errors;
-                    }
-                } else {
-                    response.success = false;
-                    response.errors = [errors.UNIDENTIFIABLE(params_id)];
-                }
+        //         if (id_test.valid) {
+        //             var userByID = yield db.user_by_id(id_test.data.toString());
+        //             if (userByID.success) {
+        //                 response.success = true;
+        //                 response.data = userByID.data;
+        //             } else {
+        //                 response.success = false;
+        //                 response.errors = userByID.errors;
+        //             }
+        //         } else if (username_test.valid) {
+        //             var userByUsername = yield db.user_by_username(username_test.data);
+        //             if (userByUsername.success) {
+        //                 response.success = true;
+        //                 response.data = userByUsername.data;
+        //             } else {
+        //                 response.success = false;
+        //                 response.errors = userByUsername.errors;
+        //             }
+        //         } else if (email_test.valid) {
+        //             var userByEmail = yield db.user_by_email(email_test.data);
+        //             if (userByEmail.success) {
+        //                 response.success = true;
+        //                 response.data = userByEmail.data;
+        //             } else {
+        //                 response.success = false;
+        //                 response.errors = userByEmail.errors;
+        //             }
+        //         } else {
+        //             response.success = false;
+        //             response.errors = [errors.UNIDENTIFIABLE(params_id)];
+        //         }
 
-                // Need to be sure this gives back an admin and not empty array!
-                // Somehow we detected a valid id/username/email but still wasn't in DB
-                if (response.success == true && response.data.length == 0) {
-                    response.success = false;
-                    response.errors = [errors.UNIDENTIFIABLE(params_id)];
-                }
-                return response;
-            };
-        },
+        //         // Need to be sure this gives back a User and not empty array!
+        //         // Somehow we detected a valid id/username/email but still wasn't in DB
+        //         if (response.success == true && response.data.length == 0) {
+        //             response.success = false;
+        //             response.errors = [errors.UNIDENTIFIABLE(params_id)];
+        //         }
+        //         return response;
+        //     };
+        // },
         catchErrors: function(err, pre) {
             return function * (next) {
                 return yield user.invalidPost(pre, [errors.UNKNOWN_ERROR("user --- " + err)]);

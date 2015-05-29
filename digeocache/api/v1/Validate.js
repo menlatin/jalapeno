@@ -191,7 +191,7 @@ module.exports = function Validate(errors) {
             };
         },
         id: function id(pre) {
-            if (Number.isInteger(Number(pre))) {
+            if (Number.isInteger(Number(pre)) && (pre !== null) && (pre !== undefined)) {
                 return {
                     valid: true,
                     data: pre
@@ -200,6 +200,166 @@ module.exports = function Validate(errors) {
             return {
                 valid: false,
                 errors: [errors.ATTRIBUTE_INVALID("id")]
+            };
+        },
+        getQueryVariable: function(queryStr, queryVar) {
+            var queryVars = queryStr.split('&');
+            for (var i = 0; i < queryVars.length; i++) {
+                var pair = queryVars[i].split('=');
+                if (decodeURIComponent(pair[0]) == queryVar) {
+                    return decodeURIComponent(pair[1]);
+                }
+            }
+            return null;
+        },
+        userID: function(userID, userSchema, db) {
+            return function * (next) {
+                var response = {};
+                var id_test = validate.id(userID);
+                var username_test = validate.attribute(userSchema, userID, "username");
+                var email_test = validate.attribute(userSchema, userID, "email");
+
+                if (id_test.valid) {
+                    console.log("id_test = ", id_test);
+                    var userByID = yield db.user_by_id(id_test.data.toString());
+                    if (userByID.success) {
+                        response.valid = true;
+                        response.data = userByID.data;
+                    } else {
+                        response.valid = false;
+                        response.errors = userByID.errors;
+                    }
+                } else if (username_test.valid) {
+                    var userByUsername = yield db.user_by_username(username_test.data);
+                    if (userByUsername.success) {
+                        response.valid = true;
+                        response.data = userByUsername.data;
+                    } else {
+                        response.valid = false;
+                        response.errors = userByUsername.errors;
+                    }
+                } else if (email_test.valid) {
+                    var userByEmail = yield db.user_by_email(email_test.data);
+                    if (userByEmail.success) {
+                        response.valid = true;
+                        response.data = userByEmail.data;
+                    } else {
+                        response.valid = false;
+                        response.errors = userByEmail.errors;
+                    }
+                } else {
+                    response.valid = false;
+                    response.errors = [errors.UNIDENTIFIABLE(userID)];
+                }
+                // Need to be sure this gives back a User and not empty array!
+                // Somehow we detected a valid id/username/email but still wasn't in DB
+                if (response.valid == true && response.data.length == 0) {
+                    response.valid = false;
+                    response.errors = [errors.UNIDENTIFIABLE(userID)];
+                }
+                return response;
+            };
+        },
+        latitude: function(lat) {
+            if (lat) {
+                // Replace whitespace to avoid false positives using Number(lng)
+                lat = lat.replace(/\s/g, "X");
+                var numLat = Number(lat);
+                if (numLat >= -90 && numLat <= 90) {
+                    return {
+                        valid: true,
+                        data: numLat
+                    };
+                }
+            }
+            return {
+                valid: false,
+                errors: [errors.COORDINATE_INVALID()]
+            };
+        },
+        longitude: function(lng) {
+            if (lng) {
+                // Replace whitespace to avoid false positives using Number(lng)
+                lng = lng.replace(/\s/g, "X");
+                var numLng = Number(lng);
+                if (numLng >= -180 && numLng <= 180) {
+                    return {
+                        valid: true,
+                        data: numLng
+                    };
+                }
+            }
+            return {
+                valid: false,
+                errors: [errors.COORDINATE_INVALID()]
+            };
+        },
+        coordinate: function(coordinateString) {
+            if (coordinateString) {
+                var coords = coordinateString.split(',');
+                if (coords.length == 2) {
+                    var lat = coords[0];
+                    var lng = coords[1];
+
+                    var test_lat = this.latitude(lat);
+                    var test_lng = this.longitude(lng);
+
+                    if (test_lat.valid && test_lng.valid) {
+                        return {
+                            valid: true,
+                            data: {
+                                lat: parseFloat(test_lat.data),
+                                lng: parseFloat(test_lng.data)
+                            }
+                        };
+                    }
+                }
+            }
+            return {
+                valid: false,
+                errors: [errors.COORDINATE_INVALID()]
+            };
+        },
+        category: function(categoryString) {
+            var categoryTest = this.regex(/^(RACE|CHARITY|RANDOM|ALL)$/i);
+            return categoryTest("category", categoryString);
+        },
+        distance: function(distanceString) {
+            var distanceTest = this.doubleRange({
+                min: 1.0,
+                max: 10000.0
+            });
+            return distanceTest("distance", distanceString);
+        },
+        period: function(periodString) {
+            if (!periodString) {
+                return {
+                    valid: false,
+                    errors: [errors.PERIOD_INVALID()]
+                };
+            }
+            var startStop = periodString.split(',');
+            if (startStop.length == 2) {
+                var start = startStop[0];
+                var stop = startStop[1];
+                var startMoment = moment(start, "YYYY-MM-DDTHH:mm:ss.SSSZ", true);
+                var stopMoment = moment(stop, "YYYY-MM-DDTHH:mm:ss.SSSZ", true);
+                var validStart = startMoment.isValid();
+                var validStop = stopMoment.isValid();
+
+                if (validStart && validStop && (validStart < validStop)) {
+                    return {
+                        valid: true,
+                        data: {
+                            start: startMoment.toISOString(),
+                            stop: stopMoment.toISOString()
+                        }
+                    };
+                }
+            }
+            return {
+                valid: false,
+                errors: [errors.PERIOD_INVALID()]
             };
         },
         regex: function(regex) {
@@ -220,13 +380,12 @@ module.exports = function Validate(errors) {
         },
         bool: function() {
             return function(attribute, value) {
-                if(_.isBoolean(value)) {
+                if (_.isBoolean(value)) {
                     return {
                         valid: true,
                         data: value
                     }
-                }
-                else {
+                } else {
                     return {
                         valid: false,
                         errors: [errors.ATTRIBUTE_INVALID(attribute)]
@@ -236,13 +395,12 @@ module.exports = function Validate(errors) {
         },
         doubleRange: function(range) {
             return function(attribute, value) {
-                if(_.isFinite(value) && ((value >= range.min) || (value <= range.max))) {
+                if (_.isFinite(value) && ((value >= range.min) || (value <= range.max))) {
                     return {
                         valid: true,
                         data: value
                     }
-                }
-                else {
+                } else {
                     return {
                         valid: false,
                         errors: [errors.ATTRIBUTE_INVALID(attribute)]

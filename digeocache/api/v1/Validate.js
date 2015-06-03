@@ -277,10 +277,20 @@ module.exports = function Validate(errors) {
         },
         bool: function() {
             return function(attribute, value) {
-                if (_.isBoolean(value)) {
+                if (_.isBoolean(value) || value == "true" || value == "false") {
+                    var boolLiteral = undefined;
+                    if (value == "true") {
+                        boolLiteral = true;
+                    }
+                    else if (value == "false") {
+                        boolLiteral = false;
+                    }
+                    else {
+                        boolLiteral = value;
+                    }
                     return {
                         valid: true,
-                        data: value
+                        data: boolLiteral
                     }
                 } else {
                     return {

@@ -4,10 +4,10 @@ module.exports = function GeocacheValidate(errors) {
 
     var geocacheValidate = {
         geocache_title: function() {
-            return this.regex(/^[a-zA-Z][a-zA-Z0-9_]{2,29}$/);
+            return this.regex(/(^[a-zA-Z][a-zA-Z0-9 ,.!@#$%^&*()\-+]{2,128}$)/);
         },
         geocache_message: function() {
-            return this.regex(/^(?=[^\d_].*?\d)\w(\w|[!@#$%]){7,20}/);
+            return this.regex(/(^[a-zA-Z][a-zA-Z0-9 ,.!@#$%^&*()\-+]{2,256}$)/);
         },
         geocache_lat: function() {
             return this.latitude();
@@ -33,9 +33,6 @@ module.exports = function GeocacheValidate(errors) {
         },
         // * Filter Validations * //
         geocache_query_filter: function(query, userSchema, db) {
-
-            console.log("query = ", query);
-
             var response = {};
             var filter = {}
             var errorArray = [];
@@ -43,6 +40,7 @@ module.exports = function GeocacheValidate(errors) {
             if (query.distance && !query.location) {
                 errorArray.push(errors.LOCATION_REQUIRED());
             }
+
             if (query.location) {
                 var locationTest = this.coordinate()("?location=",query.location);
                 if (locationTest.valid) {
@@ -51,7 +49,7 @@ module.exports = function GeocacheValidate(errors) {
                     errorArray.push(errors.QUERY_PARAM_INVALID("?location="));
                 }
             }
-            console.log("1");
+
             if (query.user) {
                 var userTest = this.userID(query.user, userSchema, db);
                 if (userTest.valid) {
@@ -60,7 +58,6 @@ module.exports = function GeocacheValidate(errors) {
                     errorArray.push(errors.QUERY_PARAM_INVALID("?user="));
                 }
             }
-                        console.log("2");
 
             if (query.category) {
                 var categoryTest = this.category()("?category=",query.category);
@@ -70,7 +67,6 @@ module.exports = function GeocacheValidate(errors) {
                     errorArray.push(errors.QUERY_PARAM_INVALID("?category="));
                 }
             }
-            console.log("3");
 
             if (query.distance) {
                 var distanceTest = this.distance()("?distance=",query.distance);
@@ -80,7 +76,6 @@ module.exports = function GeocacheValidate(errors) {
                     errorArray.push(errors.QUERY_PARAM_INVALID("?distance="));
                 }
             }
-            console.log("4");
 
             if (query.period) {
                 var periodTest = this.dateRange()("?period=",query.period);
@@ -90,7 +85,6 @@ module.exports = function GeocacheValidate(errors) {
                     errorArray.push(errors.QUERY_PARAM_INVALID("?period="));
                 }
             }
-            console.log("5");
 
             if (query.currency) {
                 var currencyTest = this.geocache_currency()("?currency=", query.currency);
@@ -100,8 +94,6 @@ module.exports = function GeocacheValidate(errors) {
                     errorArray.push(errors.QUERY_PARAM_INVALID("?currency="));
                 }
             }
-                        console.log("6");
-
 
             if (query.amount) {
                 var amountTest = this.geocache_amount()("?amount=", query.amount);
@@ -111,7 +103,6 @@ module.exports = function GeocacheValidate(errors) {
                     errorArray.push(errors.QUERY_PARAM_INVALID("?amount="));
                 }
             }
-                        console.log("7");
 
             if (query.visits) {
                 var visitsTest = this.visits()("?visits=", query.visits);

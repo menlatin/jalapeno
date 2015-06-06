@@ -39,6 +39,10 @@ module.exports = function GeocacheDB() {
                 })
                 .then(this.successOneOrNone, this.error);
         },
+        geocaches_by_filter: function(filter) {
+            console.log("DB FILTER FUNCTION, GOT HERE");
+            return this.successOneOrNone({success:true, data:filter});
+        },
         geocaches_by_id: function(id) {
             var query = "MATCH (g:Geocache) WHERE id(g) = " + id +
                 " RETURN " + this.geocache_return("g");

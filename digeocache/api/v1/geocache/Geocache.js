@@ -128,6 +128,8 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
                     geocache_test.data.updated_on = now;
                     geocache_test.data.drop_count = 1;
 
+                    //TODO: Other Auto Geocache Fields for Initial Seeding
+
                     // Request DB Create Node and Respond Accordingly
                     var create = yield db.geocache_create(geocache_test.data);
                     if (create.success) {
@@ -160,13 +162,22 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
                 }
                 // Parameter exists in URL
                 else {
-                    // Try to identify existing geocache
-                    var findGeocache = yield geocache.identifyFromURL(this.params.id);
-                    if (findGeocache.success) {
-                        return yield geocache.success(findGeocache.data);
+                    // Try to filter existing geocaches based on URL params
+                    var filter = yield validate.geocache_query_filter(this.query, userSchema, db);
+                    console.log("FILTER = ", JSON.stringify(filter, null, 4));
+                    if (filter.valid) {
+
+                        // Do Some Filtering Business here.
+                        var filterGeocaches = yield db.geocaches_by_filter(filter.data);
+                        if (filterGeocaches.success) {
+                            return yield geocache.success(filterGeocaches.data);
+                        } else {
+                            return yield geocache.invalid(filterGeocaches.errors);
+                        }
                     } else {
-                        return yield geocache.invalid(findGeocache.errors);
+                        return yield geocache.invalid(filter.errors);
                     }
+
                 }
             } catch (e) {
                 // Unknown Error
@@ -290,13 +301,11 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
                     }
                 }
                 // Parameter exists in URL
-                else {
-                }
+                else {}
 
-                var filter = yield validate.geocache_query_filter(this.query,userSchema,db);
-                console.log("FILTER = ", JSON.stringify(filter,null,4));
 
-                
+
+
 
             } catch (e) {
                 return yield geocache.catchErrors(e, null);

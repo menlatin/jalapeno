@@ -117,60 +117,60 @@ module.exports = function Errors() {
         },
         UNIDENTIFIABLE: function(id) {
             return {
-                code: 3002,
+                code: 3003,
                 message: "unidentifiable from: " + id
             }
         },
         ATTRIBUTE_TEST_REQUIRED: function(attribute) {
             return {
-                code: 3003,
+                code: 3004,
                 message: attribute + " mandates a test"
             };
         },
         ATTRIBUTE_REQUIRED: function(attribute) {
             return {
-                code: 3004,
+                code: 3005,
                 attribute: attribute,
                 message: attribute + " required"
             };
         },
         ATTRIBUTE_INVALID: function(attribute) {
             return {
-                code: 3005,
+                code: 3006,
                 attribute: attribute,
                 message: attribute + " invalid"
             };
         },
         USERNAME_TAKEN: function(attribute) {
             return {
-                code: 3006,
+                code: 3007,
                 attribute: attribute,
                 message: "username taken"
             };
         },
         EMAIL_TAKEN: function(attribute) {
             return {
-                code: 3007,
+                code: 3008,
                 attribute: attribute,
                 message: "email taken"
             };
         },
         UPDATE_EMPTY: function() {
             return {
-                code: 3008,
+                code: 3009,
                 message: "update request empty"
             };
         },
         /* Geocache Validation Errors */
         LOCATION_REQUIRED: function() {
             return {
-                code: 4003,
+                code: 4001,
                 message: "location required for distance filter"
             };
         },
         QUERY_PARAM_INVALID: function(param) {
             return {
-                code: 4004,
+                code: 4002,
                 message: "query param invalid: "+param
             };
         }

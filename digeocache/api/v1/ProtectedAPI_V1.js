@@ -33,8 +33,8 @@ module.exports = function ProtectedAPI_V1(admin, user, geocache) {
 
     // Geocache routes
     ProtectedAPI_V1.post('/geocache', geocache.post);
-    ProtectedAPI_V1.get('/geocache', geocache.mixed);
-    ProtectedAPI_V1.get('/geocache/:id', geocache.mixed);
+    ProtectedAPI_V1.get('/geocache', geocache.get);
+    ProtectedAPI_V1.get('/geocache/:id', geocache.get);
     ProtectedAPI_V1.put('/geocache', geocache.put);
     ProtectedAPI_V1.put('/geocache/:id', geocache.put);
     ProtectedAPI_V1.del('/geocache', geocache.del);

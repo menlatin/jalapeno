@@ -16,7 +16,7 @@ module.exports = function GeocacheValidate(errors) {
             return this.longitude();
         },
         geocache_currency: function() {
-            return this.regex(/(FLAP|DOGE|BITCOIN)/);
+            return this.regex(/^(FLAP|DOGE|BITCOIN)$/);
         },
         geocache_amount: function() {
             return this.doubleRange({

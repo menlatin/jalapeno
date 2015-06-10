@@ -40,6 +40,5 @@ module.exports = function ProtectedAPI_V1(admin, user, geocache) {
     ProtectedAPI_V1.del('/geocache', geocache.del);
     ProtectedAPI_V1.del('/geocache/:id', geocache.del);
 
-
     return ProtectedAPI_V1;
 };

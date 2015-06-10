@@ -128,7 +128,8 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
                     geocache_test.data.updated_on = now;
                     geocache_test.data.drop_count = 1;
 
-                    //TODO: Other Auto Geocache Fields for Initial Seeding
+                    // TODO: Other Auto Geocache Fields for Initial Seeding
+
 
                     // Request DB Create Node and Respond Accordingly
                     var create = yield db.geocache_create(geocache_test.data);
@@ -162,12 +163,25 @@ module.exports = function Geocache(db, bcrypt, parse, errors, validate, jwt, uti
                 }
                 // Parameter exists in URL
                 else {
-                    // Try to filter existing geocaches based on URL params
-                    var filter = yield validate.geocache_query_filter(this.query, userSchema, db);
+                    // Try to identify existing user
+                    var userIDFilter = undefined;
+
+                    // First extract user from query parameters and test if valid
+                    if (this.query.user) {
+                        var user_test = yield validate.userID(this.query.user, userSchema, db);
+                        if (user_test.valid) {
+                            userIDFilter = user_test.data.id;
+                        } else {
+                            user_test.errors.push(errors.QUERY_PARAM_INVALID("?user="));
+                            return yield geocache.invalid(user_test.errors);
+                        }
+                    }
+                    // Build remaining filter options based on valid URL params
+                    var filter = yield validate.geocache_query_filter(this.query);
                     console.log("FILTER = ", JSON.stringify(filter, null, 4));
                     if (filter.valid) {
-
                         // Do Some Filtering Business here.
+                        filter.data.user = userIDFilter;
                         var filterGeocaches = yield db.geocaches_by_filter(filter.data);
                         if (filterGeocaches.success) {
                             return yield geocache.success(filterGeocaches.data);

@@ -168,9 +168,15 @@ module.exports = function Errors() {
                 message: "location required for distance filter"
             };
         },
-        QUERY_PARAM_INVALID: function(param) {
+        RANGE_REQUIRED: function() {
             return {
                 code: 4002,
+                message: "range must be specified with location filter"
+            };
+        },
+        QUERY_PARAM_INVALID: function(param) {
+            return {
+                code: 4003,
                 message: "query param invalid: "+param
             };
         }

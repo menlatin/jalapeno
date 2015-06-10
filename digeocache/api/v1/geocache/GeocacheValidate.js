@@ -32,57 +32,59 @@ module.exports = function GeocacheValidate(errors) {
             return this.regex(/^0*(?:[1-9][0-9]?|360)$/);
         },
         // * Filter Validations * //
-        geocache_query_filter: function(query, userSchema, db) {
+        geocache_query_filter: function(query) {
             var response = {};
             var filter = {}
             var errorArray = [];
-            // Must provide location to filter by distance
-            if (query.distance && !query.location) {
+            // Must provide location to filter by range
+            if (query.range && !query.location) {
                 errorArray.push(errors.LOCATION_REQUIRED());
-            }
-
-            if (query.location) {
-                var locationTest = this.coordinate()("?location=",query.location);
+            } else if (query.location && !query.range) {
+                errorArray.push(errors.RANGE_REQUIRED());
+            } else if (query.location && query.range) {
+                var rangeTest = this.range()("?range=", query.range);
+                if (rangeTest.valid) {
+                    filter.distance = rangeTest.data;
+                } else {
+                    errorArray.push(errors.QUERY_PARAM_INVALID("?range="));
+                    errorArray.append(rangeTest.errors);
+                }
+                var locationTest = this.coordinate()("?location=", query.location);
                 if (locationTest.valid) {
                     filter.location = locationTest.data;
                 } else {
                     errorArray.push(errors.QUERY_PARAM_INVALID("?location="));
+                    errorArray.append(locationTest.errors);
                 }
             }
 
-            if (query.user) {
-                var userTest = this.userID(query.user, userSchema, db);
-                if (userTest.valid) {
-                    filter.user = userTest.data;
+            if (query.location) {
+                // A distance range must be specified if a coordinate is specified
+                if (query.range) {
+
                 } else {
-                    errorArray.push(errors.QUERY_PARAM_INVALID("?user="));
+                    errorArray.push(errors.QUERY_PARAM_INVALID("?location="));
+                    errorArray.push(errors.RANGE_REQUIRED());
                 }
             }
 
             if (query.category) {
-                var categoryTest = this.category()("?category=",query.category);
+                var categoryTest = this.category()("?category=", query.category);
                 if (categoryTest.valid) {
                     filter.category = categoryTest.data;
                 } else {
                     errorArray.push(errors.QUERY_PARAM_INVALID("?category="));
-                }
-            }
-
-            if (query.distance) {
-                var distanceTest = this.distance()("?distance=",query.distance);
-                if (distanceTest.valid) {
-                    filter.distance = distanceTest.data;
-                } else {
-                    errorArray.push(errors.QUERY_PARAM_INVALID("?distance="));
+                    errorArray.append(categoryTest.errors);
                 }
             }
 
             if (query.period) {
-                var periodTest = this.dateRange()("?period=",query.period);
+                var periodTest = this.dateRange()("?period=", query.period);
                 if (periodTest.valid) {
                     filter.period = periodTest.data;
                 } else {
                     errorArray.push(errors.QUERY_PARAM_INVALID("?period="));
+                    errorArray.append(periodTest.errors);
                 }
             }
 
@@ -92,6 +94,7 @@ module.exports = function GeocacheValidate(errors) {
                     filter.currency = currencyTest.data;
                 } else {
                     errorArray.push(errors.QUERY_PARAM_INVALID("?currency="));
+                    errorArray.append(currencyTest.errors);
                 }
             }
 
@@ -101,6 +104,7 @@ module.exports = function GeocacheValidate(errors) {
                     filter.amount = amountTest.data;
                 } else {
                     errorArray.push(errors.QUERY_PARAM_INVALID("?amount="));
+                    errorArray.append(amountTest.errors);
                 }
             }
 
@@ -110,6 +114,7 @@ module.exports = function GeocacheValidate(errors) {
                     filter.visits = visitsTest.data;
                 } else {
                     errorArray.push(errors.QUERY_PARAM_INVALID("?visits="));
+                    errorArray.append(visitsTest.errors);
                 }
             }
 
@@ -122,6 +127,7 @@ module.exports = function GeocacheValidate(errors) {
             }
 
             return response;
+
         }
     };
     return geocacheValidate;

@@ -219,6 +219,9 @@ module.exports = function Validate(errors) {
                 var username_test = validate.attribute(userSchema, userID, "username");
                 var email_test = validate.attribute(userSchema, userID, "email");
 
+                console.log("username_test = ", username_test);
+                console.log("email_test = ", email_test);
+
                 if (id_test.valid) {
                     var userByID = yield db.user_by_id(id_test.data.toString());
                     if (userByID.success) {
@@ -233,6 +236,7 @@ module.exports = function Validate(errors) {
                     if (userByUsername.success) {
                         response.valid = true;
                         response.data = userByUsername.data;
+                        console.log("RESPNOSE data = ", response.data);
                     } else {
                         response.valid = false;
                         response.errors = userByUsername.errors;
@@ -259,6 +263,33 @@ module.exports = function Validate(errors) {
                 return response;
             };
         },
+        geocacheID: function(geocacheID, geocacheSchema, db) {
+            return function * (next) {
+                var response = {};
+                var id_test = validate.id(geocacheID);
+
+                if (id_test.valid) {
+                    var geocacheByID = yield db.geocache_by_id(id_test.data.toString());
+                    if (userByID.success) {
+                        response.valid = true;
+                        response.data = userByID.data;
+                    } else {
+                        response.valid = false;
+                        response.errors = userByID.errors;
+                    }
+                } else {
+                    response.valid = false;
+                    response.errors = [errors.UNIDENTIFIABLE(geocacheID)];
+                }
+                // Need to be sure this gives back a User and not empty array!
+                // Somehow we detected a valid id but still wasn't in DB
+                if (response.valid == true && response.data.length == 0) {
+                    response.valid = false;
+                    response.errors = [errors.UNIDENTIFIABLE(geocacheID)];
+                }
+                return response;
+            };
+        },
         regex: function(regex) {
             return function(attribute, value) {
                 var valid = regex.test(value);
@@ -281,11 +312,9 @@ module.exports = function Validate(errors) {
                     var boolLiteral = undefined;
                     if (value == "true") {
                         boolLiteral = true;
-                    }
-                    else if (value == "false") {
+                    } else if (value == "false") {
                         boolLiteral = false;
-                    }
-                    else {
+                    } else {
                         boolLiteral = value;
                     }
                     return {
@@ -431,7 +460,8 @@ module.exports = function Validate(errors) {
         category: function() {
             return validate.regex(/^(RACE|CHARITY|RANDOM|ALL)$/i);
         },
-        distance: function() {
+        range: function() {
+            // range = distance filter critical points
             return validate.doubleRange({
                 min: 1.0,
                 max: 20000.0
